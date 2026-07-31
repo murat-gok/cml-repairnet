@@ -1,0 +1,24 @@
+enrichment:
+  sources:
+    - GO:BP
+    - GO:MF
+    - GO:CC
+    - REAC
+    - KEGG
+    - WP
+    - CORUM
+    - HPA
+  threshold: 0.05
+  no_iea: false
+  high_repairability_fraction: 0.25
+  top_per_source: 10
+
+string:
+  required_score: 700
+  network_type: functional
+  add_nodes: 0
+  version: "12.0"
+
+modules:
+  random_state: 42
+  max_k: 6

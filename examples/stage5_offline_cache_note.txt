@@ -1,0 +1,3 @@
+Stage 5 caches external API responses under data/interim/stage5/api_cache/.
+After one successful online run, use `python scripts/run_stage5.py all --offline`
+for reproducible reruns without network access.

@@ -1,4 +1,4 @@
-.PHONY: setup doctor data stage1 labels features train stage25-quick stage25-full stage3-quick stage3-full stage4-doctor stage4-quick stage4-full stage4-audit test lint all virtual-help
+.PHONY: setup doctor data stage1 labels features train stage25-quick stage25-full stage3-quick stage3-full stage4-doctor stage4-quick stage4-full stage4-audit stage5-doctor stage5-full stage5-offline stage5-report test lint all virtual-help
 
 setup:
 	bash scripts/bootstrap.sh
@@ -45,6 +45,18 @@ stage4-full:
 
 stage4-audit:
 	python scripts/run_stage4.py audit
+
+stage5-doctor:
+	python scripts/run_stage5.py doctor
+
+stage5-full:
+	python -u scripts/run_stage5.py all
+
+stage5-offline:
+	python -u scripts/run_stage5.py all --offline
+
+stage5-report:
+	python scripts/run_stage5.py report
 
 virtual-help:
 	python scripts/select_virtual_simulation_batch.py --help

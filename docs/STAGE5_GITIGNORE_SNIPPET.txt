@@ -1,0 +1,5 @@
+# Stage 5 external API response cache
+data/interim/stage5/api_cache/
+
+# Stage 5 console logs
+results/stage5_*_console.txt
