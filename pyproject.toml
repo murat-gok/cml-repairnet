@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cml-repairnet"
-version = "0.6.1"
+version = "0.7.0"
 description = "Structure-aware and uncertainty-calibrated prediction of site-specific enzymatic CML repair"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"

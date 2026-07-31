@@ -1,0 +1,2 @@
+# Stage 6 transient logs
+results/stage6_full_console.txt

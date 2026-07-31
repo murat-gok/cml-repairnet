@@ -1,0 +1,41 @@
+random_seed: 20260731
+rank_stability:
+  iterations: 2000
+  pareto_iterations: 500
+  model_weight_center: [0.60, 0.25, 0.15]
+  model_weight_concentration: 80.0
+  objective_weight_center: [0.50, 0.25, 0.25]
+  objective_weight_concentration: 60.0
+  interval_noise_fraction: 0.20
+  evidence_jitter_sd: 0.03
+  reliability_jitter_sd: 0.03
+  top_k: [10, 20, 50, 100]
+  portfolio_top_n: 100
+  max_sites_per_protein: 2
+  weight_scenarios:
+    - {name: repair_dominant, repairability: 0.70, evidence: 0.15, reliability: 0.15}
+    - {name: balanced, repairability: 0.50, evidence: 0.25, reliability: 0.25}
+    - {name: evidence_dominant, repairability: 0.35, evidence: 0.45, reliability: 0.20}
+    - {name: reliability_dominant, repairability: 0.35, evidence: 0.20, reliability: 0.45}
+residue_conservation:
+  local_window_radius: 7
+  match_score: 2.0
+  mismatch_score: -1.0
+  open_gap_score: -10.0
+  extend_gap_score: -0.5
+enrichment_sensitivity:
+  significant_only: true
+  raw_p_threshold: 0.05
+  redundancy_jaccard: 0.70
+network_robustness:
+  thresholds: [0.70, 0.80, 0.90]
+  hub_removal_counts: [1, 3, 5]
+  rewiring_iterations: 250
+  rewiring_swaps_per_edge: 5
+tiers:
+  tier1_portfolio_frequency: 0.85
+  tier1_pareto_frequency: 0.40
+  tier1_transfer_reliability: 0.55
+  tier1_max_model_disagreement: 0.15
+  tier2_portfolio_frequency: 0.60
+  tier2_transfer_reliability: 0.40
