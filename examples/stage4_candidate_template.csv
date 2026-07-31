@@ -1,0 +1,3 @@
+species,organism_id,uniprot_accession_raw,site_uniprot,tissue_or_condition,prm_validated,age_associated
+human,9606,P68363,40,HUVEC,false,false
+mouse,10090,P62806,92,heart,true,true

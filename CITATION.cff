@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Please cite the software release and the primary CMLase paper when using CML-RepairNet."
+title: "CML-RepairNet"
+version: 0.1.0
+date-released: 2026-07-27
+license: Apache-2.0
+type: software
+references:
+  - type: article
+    title: "Reversal of protein chemical aging by enzymatic deglycation"
+    year: 2026
+    doi: "10.1038/s41467-026-75141-2"

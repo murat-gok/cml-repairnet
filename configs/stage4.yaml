@@ -1,0 +1,21 @@
+stage4:
+  source_doi: "10.1038/s41467-021-26982-6"
+  mode: quick
+  workers: 2
+  min_site_plddt: 70.0
+  max_low_confidence_neighbor_fraction: 0.50
+  conformal_alpha: 0.10
+  ood_percentile_borderline: 0.95
+  ood_percentile_exclude: 0.99
+  priority_portfolio_size: 100
+  max_sites_per_protein: 2
+  transfer_safe_features:
+    - residue_sasa
+    - relative_sasa_lysine
+    - distance_to_protein_centroid
+    - neighbor_hydrophobic_fraction_8a
+    - neighbor_cysteine_count_8a
+    - neighbor_aromatic_count_8a
+    - ca_contact_count_8a
+    - ca_contact_count_10a
+    - ca_contact_count_12a

@@ -1,0 +1,55 @@
+project:
+  seed: 20260727
+  accession: PXD070124
+  scope: fully_in_silico
+
+paths:
+  article_source_xlsx: data/raw/article_source_data.xlsx
+  bsa_fasta: data/raw/P02769.fasta
+  bsa_pdb: data/raw/4F5S.pdb
+  labels: data/processed/bsa_labels.csv
+  sequence_features: data/processed/bsa_sequence_features.csv
+  structure_features: data/processed/bsa_structure_features.csv
+  results_dir: results
+  candidate_atlas: data/processed/cml_candidate_atlas.csv
+
+labels:
+  target: repair_published
+  precursor_offset: 24
+  minimum_control_abundance: 1.0
+  variance_floor: 0.0001
+
+features:
+  sequence_window_radius: 10
+  lysine_max_asa_angstrom2: 205.0
+  pdb_chain: A
+  pdb_site_column: site_paper
+  contact_radii_angstrom: [8.0, 10.0, 12.0]
+  esm_model: facebook/esm2_t12_35M_UR50D
+  use_conformational_ensemble: false
+
+validation:
+  spatial_groups: 4
+  motif_groups: 4
+  structure_groups: 4
+  bootstrap_iterations: 2000
+  permutation_iterations: 1000
+  primary_metric: mae
+  conformal_alpha: 0.10
+
+virtual_screening:
+  batch_size: 24
+  repairability_weight: 0.20
+  uncertainty_weight: 0.25
+  biological_priority_weight: 0.20
+  diversity_weight: 0.20
+  ood_penalty_weight: 0.10
+  compute_cost_penalty_weight: 0.05
+
+multifidelity:
+  enable_docking: false
+  enable_md: false
+  require_verified_cmlase_sequence: true
+  low_fidelity_budget: 10000
+  medium_fidelity_budget: 500
+  high_fidelity_budget: 50

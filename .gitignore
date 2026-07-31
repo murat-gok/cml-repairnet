@@ -1,0 +1,49 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Third-party and generated data
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/external/*
+!data/external/.gitkeep
+results/
+models/
+mlruns/
+.DS_Store
+
+# Stage 4 generated caches
+data/interim/stage4/alphafold_cache/
+results/*_console.txt
+.venv/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Stage 4 caches and downloads
+data/interim/stage4/alphafold_cache/
+data/raw/stage4/*.cif
+data/raw/stage4/*.bcif
+data/raw/stage4/*.pdb
+
+# Console logs and temporary backups
+results/*_console.txt
+results/stage4_quick_v056_backup/
+*.zip
+
+# Editors and operating systems
+.vscode/
+.DS_Store
+Thumbs.db
