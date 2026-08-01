@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
-
 from cml_repairnet.data.download import download_public_bundle
 from cml_repairnet.data.prepare_labels import build_bsa_labels
 from cml_repairnet.features.sequence import build_sequence_features
@@ -56,9 +54,7 @@ def run_stage1(config: dict[str, Any], *, download: bool = True) -> dict[str, An
         structure_path,
         chain_id=str(features_config.get("pdb_chain", "A")),
         lysine_max_asa=float(features_config["lysine_max_asa_angstrom2"]),
-        contact_radii=tuple(
-            float(value) for value in features_config["contact_radii_angstrom"]
-        ),
+        contact_radii=tuple(float(value) for value in features_config["contact_radii_angstrom"]),
         pdb_site_column=str(features_config.get("pdb_site_column", "site_paper")),
     )
 

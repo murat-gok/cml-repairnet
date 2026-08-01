@@ -44,13 +44,19 @@ def build_stage5_audit(paths: dict[str, Path]) -> dict[str, Any]:
     if paths["enrichment_all"].exists():
         frame = _safe_read(paths["enrichment_all"])
         if "significant" in frame:
-            audit["enrichment_terms_significant"] = int(frame["significant"].fillna(False).astype(bool).sum())
+            audit["enrichment_terms_significant"] = int(
+                frame["significant"].fillna(False).astype(bool).sum()
+            )
     if paths["orthology_manifest"].exists():
         orth_manifest = _safe_read(paths["orthology_manifest"])
         if not orth_manifest.empty:
-            audit["orthology_valid_target_symbols"] = int(pd.to_numeric(
-                orth_manifest.get("valid_target_symbols", pd.Series([0])), errors="coerce"
-            ).fillna(0).sum())
+            audit["orthology_valid_target_symbols"] = int(
+                pd.to_numeric(
+                    orth_manifest.get("valid_target_symbols", pd.Series([0])), errors="coerce"
+                )
+                .fillna(0)
+                .sum()
+            )
             audit["orthology_status"] = str(orth_manifest.iloc[0].get("status", "unknown"))
     if paths["module_selection"].exists():
         selection = _safe_read(paths["module_selection"])
@@ -61,19 +67,26 @@ def build_stage5_audit(paths: dict[str, Path]) -> dict[str, Any]:
                 audit["module_selected_k"] = int(selection.loc[idx, "k"])
                 audit["module_best_silhouette"] = float(scores.loc[idx])
                 audit["module_interpretation"] = (
-                    "exploratory_low_separation" if float(scores.loc[idx]) < 0.30
+                    "exploratory_low_separation"
+                    if float(scores.loc[idx]) < 0.30
                     else "exploratory_moderate_separation"
                 )
 
     manifests = {}
-    for name in ("annotation_manifest", "enrichment_manifest", "network_manifest", "orthology_manifest"):
+    for name in (
+        "annotation_manifest",
+        "enrichment_manifest",
+        "network_manifest",
+        "orthology_manifest",
+    ):
         path = paths[name]
         if path.exists():
             manifests[name] = _safe_read(path).to_dict(orient="records")
     audit["external_service_manifests"] = manifests
-    complete_core = all(paths[name].exists() for name in (
-        "module_assignments", "module_profiles", "candidate_table"
-    ))
+    complete_core = all(
+        paths[name].exists()
+        for name in ("module_assignments", "module_profiles", "candidate_table")
+    )
     audit["stage5_completion_status"] = "complete" if complete_core else "partial"
     return audit
 
@@ -116,15 +129,55 @@ def write_stage5_report(paths: dict[str, Path]) -> dict[str, Any]:
     ]
     if not portfolio.empty:
         lines += ["", "## Leading portfolio candidates", ""]
-        columns = [c for c in ["portfolio_rank", "species", "gene_symbol", "site_uniprot", "repairability_extra_trees", "weighted_priority_score", "module_label"] if c in portfolio]
-        lines.append(portfolio.sort_values("portfolio_rank").head(15)[columns].to_markdown(index=False))
+        columns = [
+            c
+            for c in [
+                "portfolio_rank",
+                "species",
+                "gene_symbol",
+                "site_uniprot",
+                "repairability_extra_trees",
+                "weighted_priority_score",
+                "module_label",
+            ]
+            if c in portfolio
+        ]
+        lines.append(
+            portfolio.sort_values("portfolio_rank").head(15)[columns].to_markdown(index=False)
+        )
     if not enrichment.empty:
         lines += ["", "## Leading functional terms", ""]
-        columns = [c for c in ["species", "query_name", "source", "term_id", "term_name", "p_value_adjusted", "fold_enrichment"] if c in enrichment]
+        columns = [
+            c
+            for c in [
+                "species",
+                "query_name",
+                "source",
+                "term_id",
+                "term_name",
+                "p_value_adjusted",
+                "fold_enrichment",
+            ]
+            if c in enrichment
+        ]
         lines.append(enrichment.head(20)[columns].to_markdown(index=False))
     if not modules.empty:
         lines += ["", "## Candidate modules", ""]
-        columns = [c for c in ["module_id", "module_label", "sites", "proteins", "human_sites", "mouse_sites", "repairability_extra_trees", "evidence_score_raw", "transfer_reliability_score"] if c in modules]
+        columns = [
+            c
+            for c in [
+                "module_id",
+                "module_label",
+                "sites",
+                "proteins",
+                "human_sites",
+                "mouse_sites",
+                "repairability_extra_trees",
+                "evidence_score_raw",
+                "transfer_reliability_score",
+            ]
+            if c in modules
+        ]
         lines.append(modules[columns].to_markdown(index=False))
     if not orthology.empty:
         lines += ["", "## Cross-species concordance", "", orthology.to_markdown(index=False)]

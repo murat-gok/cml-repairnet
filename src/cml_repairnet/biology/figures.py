@@ -21,15 +21,25 @@ def enrichment_bubble_plot(enrichment: pd.DataFrame, output: Path, *, top_n: int
     data = enrichment.loc[enrichment["significant"].fillna(False)].copy()
     if data.empty:
         return
-    data["score"] = -np.log10(pd.to_numeric(data["p_value_adjusted"], errors="coerce").clip(lower=1e-300))
-    data = data.sort_values(["score", "fold_enrichment"], ascending=False).head(top_n).sort_values("score")
+    data["score"] = -np.log10(
+        pd.to_numeric(data["p_value_adjusted"], errors="coerce").clip(lower=1e-300)
+    )
+    data = (
+        data.sort_values(["score", "fold_enrichment"], ascending=False)
+        .head(top_n)
+        .sort_values("score")
+    )
     fig, ax = plt.subplots(figsize=(9, max(5, 0.32 * len(data))))
     sizes = pd.to_numeric(data["intersection_size"], errors="coerce").fillna(1).clip(lower=1) * 18
     scatter = ax.scatter(data["score"], np.arange(len(data)), s=sizes, c=data["fold_enrichment"])
     context = (
-        "[" + data["species"].astype(str) + "/"
-        + data["query_name"].astype(str) + "/"
-        + data["source"].astype(str) + "] "
+        "["
+        + data["species"].astype(str)
+        + "/"
+        + data["query_name"].astype(str)
+        + "/"
+        + data["source"].astype(str)
+        + "] "
         + data["term_name"].astype(str)
     )
     ax.set_yticks(np.arange(len(data)), context.str.slice(0, 100))
@@ -43,7 +53,9 @@ def cross_species_scatter(pairs: pd.DataFrame, output: Path) -> None:
     if pairs.empty:
         return
     fig, ax = plt.subplots(figsize=(7, 7))
-    ax.scatter(pairs["repairability_extra_trees_human"], pairs["repairability_extra_trees_mouse"], s=50)
+    ax.scatter(
+        pairs["repairability_extra_trees_human"], pairs["repairability_extra_trees_mouse"], s=50
+    )
     low = min(ax.get_xlim()[0], ax.get_ylim()[0])
     high = max(ax.get_xlim()[1], ax.get_ylim()[1])
     ax.plot([low, high], [low, high], linestyle="--")
@@ -51,7 +63,11 @@ def cross_species_scatter(pairs: pd.DataFrame, output: Path) -> None:
     ax.set_ylabel("Mouse Extra Trees repairability")
     ax.set_title("Cross-species ortholog concordance")
     for row in pairs.head(12).itertuples(index=False):
-        ax.annotate(str(row.source_gene), (row.repairability_extra_trees_human, row.repairability_extra_trees_mouse), fontsize=7)
+        ax.annotate(
+            str(row.source_gene),
+            (row.repairability_extra_trees_human, row.repairability_extra_trees_mouse),
+            fontsize=7,
+        )
     _save(fig, output)
 
 
@@ -103,5 +119,9 @@ def priority_landscape(portfolio: pd.DataFrame, output: Path) -> None:
     fig.colorbar(scatter, ax=ax, label="Weighted priority")
     for row in portfolio.nsmallest(12, "portfolio_rank").itertuples(index=False):
         gene = str(row.gene_names).split()[0]
-        ax.annotate(f"{gene} K{int(row.site_uniprot)}", (row.repairability_extra_trees, row.transfer_reliability_score), fontsize=7)
+        ax.annotate(
+            f"{gene} K{int(row.site_uniprot)}",
+            (row.repairability_extra_trees, row.transfer_reliability_score),
+            fontsize=7,
+        )
     _save(fig, output)

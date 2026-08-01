@@ -3,10 +3,11 @@ from __future__ import annotations
 import io
 import json
 import time
-from datetime import datetime, timezone
+from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import pandas as pd
 import requests
@@ -20,7 +21,9 @@ class OfflineCacheMiss(RuntimeError):
 
 
 def _safe_key(text: str) -> str:
-    return "".join(character if character.isalnum() or character in "-_." else "_" for character in text)
+    return "".join(
+        character if character.isalnum() or character in "-_." else "_" for character in text
+    )
 
 
 def build_retrying_session(*, total: int = 5, backoff_factor: float = 1.0) -> requests.Session:
@@ -124,7 +127,8 @@ class CachedHttpClient:
         selected_headers = {
             key: value
             for key, value in response.headers.items()
-            if key.lower() in {
+            if key.lower()
+            in {
                 "x-uniprot-release",
                 "x-uniprot-release-date",
                 "etag",
@@ -133,7 +137,7 @@ class CachedHttpClient:
             }
         }
         metadata = {
-            "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
+            "retrieved_at_utc": datetime.now(UTC).isoformat(),
             "url": response.url,
             "status_code": response.status_code,
             "headers": selected_headers,
@@ -301,8 +305,12 @@ class UniProtAnnotationClient(CachedHttpClient):
         "cc_subcellular_location",
     ]
 
-    def fetch(self, accessions: Iterable[str], *, query_name: str, chunk_size: int = 80) -> pd.DataFrame:
-        unique = sorted({str(value).strip().split("-")[0] for value in accessions if str(value).strip()})
+    def fetch(
+        self, accessions: Iterable[str], *, query_name: str, chunk_size: int = 80
+    ) -> pd.DataFrame:
+        unique = sorted(
+            {str(value).strip().split("-")[0] for value in accessions if str(value).strip()}
+        )
         frames: list[pd.DataFrame] = []
         for index in range(0, len(unique), chunk_size):
             chunk = unique[index : index + chunk_size]

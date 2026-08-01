@@ -6,9 +6,12 @@ from scipy.stats import rankdata, spearmanr
 
 from .schema import add_labels
 
-
 MODEL_COLUMNS = ["repairability_extra_trees", "repairability_lightgbm", "repairability_ridge"]
-OBJECTIVE_COLUMNS = ["repairability_score_norm", "evidence_score_norm", "transfer_reliability_score"]
+OBJECTIVE_COLUMNS = [
+    "repairability_score_norm",
+    "evidence_score_norm",
+    "transfer_reliability_score",
+]
 
 
 def percentile(values: np.ndarray) -> np.ndarray:
@@ -234,9 +237,17 @@ def run_rank_stability(
     model_matrix = frame[MODEL_COLUMNS].apply(pd.to_numeric, errors="coerce").to_numpy(float)
     if np.isnan(model_matrix).any():
         raise ValueError("Model predictions contain missing values")
-    evidence = pd.to_numeric(frame["evidence_score_norm"], errors="coerce").fillna(0).to_numpy(float)
-    reliability = pd.to_numeric(frame["transfer_reliability_score"], errors="coerce").fillna(0).to_numpy(float)
-    interval = pd.to_numeric(frame["prediction_interval_width"], errors="coerce").fillna(0).to_numpy(float)
+    evidence = (
+        pd.to_numeric(frame["evidence_score_norm"], errors="coerce").fillna(0).to_numpy(float)
+    )
+    reliability = (
+        pd.to_numeric(frame["transfer_reliability_score"], errors="coerce")
+        .fillna(0)
+        .to_numpy(float)
+    )
+    interval = (
+        pd.to_numeric(frame["prediction_interval_width"], errors="coerce").fillna(0).to_numpy(float)
+    )
     species = frame["species"].astype(str).to_numpy()
     proteins = frame["uniprot_accession"].astype(str).to_numpy()
 
@@ -350,22 +361,22 @@ def run_rank_stability(
         result[f"top{k}_selection_frequency"] = top_counts[k] / iterations
     result["portfolio_selection_frequency"] = portfolio_counts / iterations
     result["pareto_membership_frequency"] = pareto_counts / max(pareto_iterations, 1)
-    result["baseline_portfolio_member"] = result["candidate_id"].isin(
-        set(portfolio["candidate_id"])
-    ).astype(int)
-    result["baseline_pareto_member"] = result["candidate_id"].isin(
-        set(pareto["candidate_id"])
-    ).astype(int)
+    result["baseline_portfolio_member"] = (
+        result["candidate_id"].isin(set(portfolio["candidate_id"])).astype(int)
+    )
+    result["baseline_pareto_member"] = (
+        result["candidate_id"].isin(set(pareto["candidate_id"])).astype(int)
+    )
     result = result.sort_values(["mean_stress_rank", "baseline_rank"]).reset_index(drop=True)
 
-    baseline_priority = pd.to_numeric(
-        frame["weighted_priority_score"], errors="coerce"
-    ).to_numpy(float)
+    baseline_priority = pd.to_numeric(frame["weighted_priority_score"], errors="coerce").to_numpy(
+        float
+    )
     baseline_portfolio = set(portfolio["candidate_id"].astype(str))
     scenario_rows = []
-    fixed_repairability = pd.to_numeric(
-        frame["repairability_score_norm"], errors="coerce"
-    ).fillna(0).to_numpy(float)
+    fixed_repairability = (
+        pd.to_numeric(frame["repairability_score_norm"], errors="coerce").fillna(0).to_numpy(float)
+    )
     fixed_objectives = np.column_stack([fixed_repairability, evidence, reliability])
     fixed_front_ranks = specieswise_nondominated_front_ranks(fixed_objectives, species)
     baseline_selected = select_diversity_constrained_indices(
@@ -389,9 +400,7 @@ def run_rank_stability(
         )
         weights /= weights.sum()
         priority = (
-            weights[0] * fixed_repairability
-            + weights[1] * evidence
-            + weights[2] * reliability
+            weights[0] * fixed_repairability + weights[1] * evidence + weights[2] * reliability
         )
         selected = select_diversity_constrained_indices(
             priority,

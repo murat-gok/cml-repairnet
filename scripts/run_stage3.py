@@ -5,7 +5,6 @@ import json
 import warnings
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from cml_repairnet.evaluation.robustness import build_feature_view
@@ -100,8 +99,13 @@ def _write_report(
         ]
     if not domain_metrics.empty:
         display_columns = [
-            "model", "mae", "rmse", "spearman_rho", "r2",
-            "low_boundary_mae", "high_boundary_mae",
+            "model",
+            "mae",
+            "rmse",
+            "spearman_rho",
+            "r2",
+            "low_boundary_mae",
+            "high_boundary_mae",
         ]
         display_columns = [column for column in display_columns if column in domain_metrics]
         lines += [
@@ -195,6 +199,7 @@ def main() -> None:
             ["model", "outer_group"]
         ):
             from cml_repairnet.evaluation.metrics import regression_metrics
+
             domain_rows.append(
                 {
                     "model": model_name,
@@ -210,16 +215,13 @@ def main() -> None:
             args.output / "domain_holdout" / "domain_metrics_by_domain.csv", index=False
         )
         if not uncertainty.empty:
-            uncertainty_by_domain = (
-                uncertainty.groupby("outer_group", as_index=False)
-                .agg(
-                    n_sites=("covered", "size"),
-                    coverage=("covered", "mean"),
-                    mean_interval_width=("interval_width", "mean"),
-                    median_interval_width=("interval_width", "median"),
-                    mae=("absolute_error", "mean"),
-                    ood_count=("ood_flag", "sum"),
-                )
+            uncertainty_by_domain = uncertainty.groupby("outer_group", as_index=False).agg(
+                n_sites=("covered", "size"),
+                coverage=("covered", "mean"),
+                mean_interval_width=("interval_width", "mean"),
+                median_interval_width=("interval_width", "median"),
+                mae=("absolute_error", "mean"),
+                ood_count=("ood_flag", "sum"),
             )
             uncertainty_by_domain.to_csv(
                 args.output / "domain_holdout" / "domain_uncertainty_by_domain.csv",

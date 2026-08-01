@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-import cml_repairnet.atlas.sources as sources
+from cml_repairnet.atlas import sources
 from cml_repairnet.atlas.sources import (
     annotate_candidates_with_uniprot,
     extract_accessions,
@@ -14,10 +14,7 @@ from cml_repairnet.atlas.sources import (
 
 
 def test_strict_uniprot_accession_pattern_rejects_protein_words() -> None:
-    text = (
-        "ACTIVATING ASSOCIATED ATTACHMENT CONTAINING CYTOCHROME "
-        "P68371 A0A0B4J2F0 Q9Y6R7-2"
-    )
+    text = "ACTIVATING ASSOCIATED ATTACHMENT CONTAINING CYTOCHROME P68371 A0A0B4J2F0 Q9Y6R7-2"
     assert extract_accessions(text) == ["P68371", "A0A0B4J2F0", "Q9Y6R7-2"]
     assert not is_valid_uniprot_accession("ACTIVATING")
     assert not is_valid_uniprot_accession("ASSOCIATED")
@@ -47,9 +44,7 @@ def test_parser_prefers_accession_rich_column_over_protein_names(tmp_path: Path)
     assert diagnostics[0].accession_column == "Database identifier"
 
 
-def test_annotate_filters_invalid_accessions_before_api(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_annotate_filters_invalid_accessions_before_api(tmp_path: Path, monkeypatch) -> None:
     candidates = pd.DataFrame(
         {
             "candidate_id": ["human:ACTIVATING:K2", "human:P68371:K2"],

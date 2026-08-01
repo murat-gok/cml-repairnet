@@ -24,8 +24,20 @@ def normalize_string_edges(frame: pd.DataFrame, *, species: str, query_name: str
     if frame.empty:
         return pd.DataFrame(
             columns=[
-                "species", "query_name", "node_a", "node_b", "string_id_a", "string_id_b",
-                "combined_score", "nscore", "fscore", "pscore", "ascore", "escore", "dscore", "tscore",
+                "species",
+                "query_name",
+                "node_a",
+                "node_b",
+                "string_id_a",
+                "string_id_b",
+                "combined_score",
+                "nscore",
+                "fscore",
+                "pscore",
+                "ascore",
+                "escore",
+                "dscore",
+                "tscore",
             ]
         )
     rename = {
@@ -39,8 +51,20 @@ def normalize_string_edges(frame: pd.DataFrame, *, species: str, query_name: str
     result.insert(0, "query_name", query_name)
     result.insert(0, "species", species)
     keep = [
-        "species", "query_name", "node_a", "node_b", "string_id_a", "string_id_b",
-        "combined_score", "nscore", "fscore", "pscore", "ascore", "escore", "dscore", "tscore",
+        "species",
+        "query_name",
+        "node_a",
+        "node_b",
+        "string_id_a",
+        "string_id_b",
+        "combined_score",
+        "nscore",
+        "fscore",
+        "pscore",
+        "ascore",
+        "escore",
+        "dscore",
+        "tscore",
     ]
     for column in keep:
         if column not in result:
@@ -51,7 +75,9 @@ def normalize_string_edges(frame: pd.DataFrame, *, species: str, query_name: str
     return result[keep + ["edge_key"]].drop_duplicates("edge_key")
 
 
-def graph_tables(edges: pd.DataFrame, *, species: str, query_name: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+def graph_tables(
+    edges: pd.DataFrame, *, species: str, query_name: str
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     graph = nx.Graph()
     for row in edges.itertuples(index=False):
         graph.add_edge(
@@ -61,20 +87,34 @@ def graph_tables(edges: pd.DataFrame, *, species: str, query_name: str) -> tuple
         )
     if graph.number_of_nodes() == 0:
         empty_nodes = pd.DataFrame(
-            columns=["species", "query_name", "gene_symbol", "degree", "weighted_degree", "betweenness", "closeness", "eigenvector", "community"]
+            columns=[
+                "species",
+                "query_name",
+                "gene_symbol",
+                "degree",
+                "weighted_degree",
+                "betweenness",
+                "closeness",
+                "eigenvector",
+                "community",
+            ]
         )
-        metrics = pd.DataFrame([{
-            "species": species,
-            "query_name": query_name,
-            "nodes": 0,
-            "edges": 0,
-            "density": 0.0,
-            "connected_components": 0,
-            "largest_component": 0,
-            "average_clustering": np.nan,
-            "transitivity": np.nan,
-            "assortativity": np.nan,
-        }])
+        metrics = pd.DataFrame(
+            [
+                {
+                    "species": species,
+                    "query_name": query_name,
+                    "nodes": 0,
+                    "edges": 0,
+                    "density": 0.0,
+                    "connected_components": 0,
+                    "largest_component": 0,
+                    "average_clustering": np.nan,
+                    "transitivity": np.nan,
+                    "assortativity": np.nan,
+                }
+            ]
+        )
         return empty_nodes, metrics
 
     degree = dict(graph.degree())
@@ -85,42 +125,54 @@ def graph_tables(edges: pd.DataFrame, *, species: str, query_name: str) -> tuple
         eigenvector = nx.eigenvector_centrality_numpy(graph, weight="weight")
     except Exception:
         eigenvector = {node: np.nan for node in graph.nodes}
-    communities = list(nx.community.greedy_modularity_communities(graph, weight="weight")) if graph.number_of_edges() else []
+    communities = (
+        list(nx.community.greedy_modularity_communities(graph, weight="weight"))
+        if graph.number_of_edges()
+        else []
+    )
     community_map: dict[str, int] = {}
     for index, community in enumerate(communities, start=1):
         for node in community:
             community_map[str(node)] = index
-    nodes = pd.DataFrame([
-        {
-            "species": species,
-            "query_name": query_name,
-            "gene_symbol": node,
-            "degree": degree[node],
-            "weighted_degree": weighted_degree[node],
-            "betweenness": betweenness[node],
-            "closeness": closeness[node],
-            "eigenvector": eigenvector[node],
-            "community": community_map.get(node, 0),
-        }
-        for node in graph.nodes
-    ]).sort_values(["degree", "betweenness"], ascending=False)
+    nodes = pd.DataFrame(
+        [
+            {
+                "species": species,
+                "query_name": query_name,
+                "gene_symbol": node,
+                "degree": degree[node],
+                "weighted_degree": weighted_degree[node],
+                "betweenness": betweenness[node],
+                "closeness": closeness[node],
+                "eigenvector": eigenvector[node],
+                "community": community_map.get(node, 0),
+            }
+            for node in graph.nodes
+        ]
+    ).sort_values(["degree", "betweenness"], ascending=False)
     components = [len(component) for component in nx.connected_components(graph)]
     try:
         assortativity = nx.degree_assortativity_coefficient(graph)
     except Exception:
         assortativity = np.nan
-    metrics = pd.DataFrame([{
-        "species": species,
-        "query_name": query_name,
-        "nodes": graph.number_of_nodes(),
-        "edges": graph.number_of_edges(),
-        "density": nx.density(graph),
-        "connected_components": len(components),
-        "largest_component": max(components) if components else 0,
-        "average_clustering": nx.average_clustering(graph, weight="weight") if graph.number_of_edges() else np.nan,
-        "transitivity": nx.transitivity(graph) if graph.number_of_edges() else np.nan,
-        "assortativity": assortativity,
-    }])
+    metrics = pd.DataFrame(
+        [
+            {
+                "species": species,
+                "query_name": query_name,
+                "nodes": graph.number_of_nodes(),
+                "edges": graph.number_of_edges(),
+                "density": nx.density(graph),
+                "connected_components": len(components),
+                "largest_component": max(components) if components else 0,
+                "average_clustering": nx.average_clustering(graph, weight="weight")
+                if graph.number_of_edges()
+                else np.nan,
+                "transitivity": nx.transitivity(graph) if graph.number_of_edges() else np.nan,
+                "assortativity": assortativity,
+            }
+        ]
+    )
     return nodes, metrics
 
 
@@ -171,16 +223,22 @@ def run_string_networks(
             except Exception as exc:
                 status = "failed"
                 error = f"{type(exc).__name__}: {exc}"
-            manifest_rows.append({
-                "species": species,
-                "query_name": query_name,
-                "input_genes": len(genes),
-                "required_score": required_score,
-                "status": status,
-                "error": error,
-                "genes": " | ".join(genes),
-            })
-    concat = lambda frames: pd.concat([f for f in frames if not f.empty], ignore_index=True) if any(not f.empty for f in frames) else pd.DataFrame()
+            manifest_rows.append(
+                {
+                    "species": species,
+                    "query_name": query_name,
+                    "input_genes": len(genes),
+                    "required_score": required_score,
+                    "status": status,
+                    "error": error,
+                    "genes": " | ".join(genes),
+                }
+            )
+    concat = lambda frames: (
+        pd.concat([f for f in frames if not f.empty], ignore_index=True)
+        if any(not f.empty for f in frames)
+        else pd.DataFrame()
+    )
     return NetworkResult(
         edges=concat(edge_frames),
         nodes=concat(node_frames),

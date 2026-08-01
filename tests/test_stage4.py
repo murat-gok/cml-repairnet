@@ -18,8 +18,8 @@ from cml_repairnet.atlas.sources import (
     normalize_workbook,
 )
 from cml_repairnet.atlas.structures import (
-    AlphaFoldEntry,
     TRANSFER_FEATURES,
+    AlphaFoldEntry,
     extract_site_features_from_structure,
 )
 
@@ -119,13 +119,21 @@ def test_non_dominated_sort_and_portfolio() -> None:
 
 def test_workbook_parser_detects_preamble_header(tmp_path: Path) -> None:
     workbook = tmp_path / "preamble.xlsx"
-    raw = pd.DataFrame([
-        ["Supplementary Data 1", None, None, None, None],
-        ["CML sites identified in HUVEC", None, None, None, None],
-        ["Majority protein IDs", "Positions within proteins", "Modification", "Sample", "PRM validated"],
-        ["sp|P12345|TEST_HUMAN", "K10", "CML", "HUVEC", "yes"],
-        ["sp|Q8N123|TEST_MOUSE", "K20", "CML", "MEF", "no"],
-    ])
+    raw = pd.DataFrame(
+        [
+            ["Supplementary Data 1", None, None, None, None],
+            ["CML sites identified in HUVEC", None, None, None, None],
+            [
+                "Majority protein IDs",
+                "Positions within proteins",
+                "Modification",
+                "Sample",
+                "PRM validated",
+            ],
+            ["sp|P12345|TEST_HUMAN", "K10", "CML", "HUVEC", "yes"],
+            ["sp|Q8N123|TEST_MOUSE", "K20", "CML", "MEF", "no"],
+        ]
+    )
     with pd.ExcelWriter(workbook) as writer:
         raw.to_excel(writer, sheet_name="CML sites", index=False, header=False)
     parsed, diagnostics = normalize_workbook(workbook, source_label="cellular")
@@ -136,13 +144,20 @@ def test_workbook_parser_detects_preamble_header(tmp_path: Path) -> None:
 
 def test_workbook_parser_detects_two_row_header(tmp_path: Path) -> None:
     workbook = tmp_path / "two_header.xlsx"
-    raw = pd.DataFrame([
-        ["Notes", None, None, None],
-        ["Protein information", "Modification information", "Modification information", "Evidence"],
-        ["UniProt accession", "Position in protein", "Type", "Sample"],
-        ["P12345", 10, "CM(K)", "HUVEC"],
-        ["Q8N123", 20, "CM(K)", "MEF"],
-    ])
+    raw = pd.DataFrame(
+        [
+            ["Notes", None, None, None],
+            [
+                "Protein information",
+                "Modification information",
+                "Modification information",
+                "Evidence",
+            ],
+            ["UniProt accession", "Position in protein", "Type", "Sample"],
+            ["P12345", 10, "CM(K)", "HUVEC"],
+            ["Q8N123", 20, "CM(K)", "MEF"],
+        ]
+    )
     with pd.ExcelWriter(workbook) as writer:
         raw.to_excel(writer, sheet_name="results", index=False, header=False)
     parsed, diagnostics = normalize_workbook(workbook, source_label="cellular")

@@ -21,7 +21,11 @@ def test_pareto_excludes_domain_shift_and_uses_transfer_reliability() -> None:
             "prediction_interval_width": [0.4, 0.5, 0.3, 0.4, 0.6],
             "model_disagreement": [0.03, 0.05, 0.01, 0.04, 0.06],
             "applicability_status": [
-                "in_domain", "in_domain", "out_of_domain", "in_domain", "in_domain"
+                "in_domain",
+                "in_domain",
+                "out_of_domain",
+                "in_domain",
+                "in_domain",
             ],
         }
     )

@@ -4,10 +4,9 @@ import hashlib
 import json
 import re
 import time
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
-from urllib.parse import quote
 
 import numpy as np
 import pandas as pd
@@ -350,7 +349,10 @@ def map_cml_peptide_to_sequence(
     positions = starts(seq, clean)
     method = "exact"
     if not positions:
-        positions = starts(seq.translate(str.maketrans({"I": "J", "L": "J"})), clean.translate(str.maketrans({"I": "J", "L": "J"})))
+        positions = starts(
+            seq.translate(str.maketrans({"I": "J", "L": "J"})),
+            clean.translate(str.maketrans({"I": "J", "L": "J"})),
+        )
         method = "il_equivalent"
     sites = sorted({start + offset + 1 for start in positions})
     if not sites:
@@ -564,7 +566,10 @@ def _accession_header_bonus(column: object) -> int:
         return 0
     if "uniprot" in canon or "accession" in canon:
         return 50
-    if any(token in canon for token in ("majority protein id", "protein ids", "protein id", "leading razor protein")):
+    if any(
+        token in canon
+        for token in ("majority protein id", "protein ids", "protein id", "leading razor protein")
+    ):
         return 30
     if canon in {"protein", "proteins", "protein name", "protein names"}:
         return 0
@@ -596,9 +601,7 @@ def _select_accession_column(frame: pd.DataFrame) -> str | None:
     return name
 
 
-def _read_supplementary_sheet(
-    workbook: Path, sheet: str
-) -> tuple[pd.DataFrame, int, int]:
+def _read_supplementary_sheet(workbook: Path, sheet: str) -> tuple[pd.DataFrame, int, int]:
     raw = pd.read_excel(workbook, sheet_name=sheet, header=None, dtype=object)
     raw = raw.dropna(how="all").dropna(axis=1, how="all")
     if raw.empty:
@@ -694,8 +697,18 @@ def normalize_workbook(
         except Exception as exc:
             diagnostics.append(
                 ParseDiagnostics(
-                    workbook.name, sheet, 0, 0, None, None, None,
-                    f"read_error:{type(exc).__name__}", None, None, None, str(exc)[:300],
+                    workbook.name,
+                    sheet,
+                    0,
+                    0,
+                    None,
+                    None,
+                    None,
+                    f"read_error:{type(exc).__name__}",
+                    None,
+                    None,
+                    None,
+                    str(exc)[:300],
                 )
             )
             continue
@@ -711,7 +724,9 @@ def normalize_workbook(
         # them for sequence-based mapping during the UniProt annotation stage.
         if "prm" in lowered_sheet:
             peptide_col = _best_column(frame.columns, PEPTIDE_ALIASES)
-            species, organism_id = infer_species(sheet, default="human" if "huvec" in lowered_sheet else "mouse")
+            species, organism_id = infer_species(
+                sheet, default="human" if "huvec" in lowered_sheet else "mouse"
+            )
             if accession_col and peptide_col and species:
                 for row_offset, (_, record) in enumerate(frame.iterrows(), start=1):
                     peptide = str(record.get(peptide_col, "")).strip()
@@ -719,32 +734,48 @@ def normalize_workbook(
                     if clean is None:
                         continue  # unmodified PRM controls are not CML-site evidence
                     for accession in extract_accessions(record.get(accession_col)):
-                        rows.append(_base_evidence_row(
-                            species=species,
-                            organism_id=organism_id,
-                            uniprot_accession_raw=accession,
-                            site_uniprot=pd.NA,
-                            source_label=source_label,
-                            source_workbook=workbook.name,
-                            source_sheet=sheet,
-                            source_row=header_row + header_depth + row_offset + 1,
-                            pairing_status="prm_requires_sequence_mapping",
-                            peptide_sequence=peptide,
-                            tissue_or_condition="HUVEC" if species == "human" else "PRM panel",
-                            prm_validated=True,
-                            evidence_type="prm_peptide",
-                        ))
+                        rows.append(
+                            _base_evidence_row(
+                                species=species,
+                                organism_id=organism_id,
+                                uniprot_accession_raw=accession,
+                                site_uniprot=pd.NA,
+                                source_label=source_label,
+                                source_workbook=workbook.name,
+                                source_sheet=sheet,
+                                source_row=header_row + header_depth + row_offset + 1,
+                                pairing_status="prm_requires_sequence_mapping",
+                                peptide_sequence=peptide,
+                                tissue_or_condition="HUVEC" if species == "human" else "PRM panel",
+                                prm_validated=True,
+                                evidence_type="prm_peptide",
+                            )
+                        )
             parsed_count = len(rows) - parsed_before
-            diagnostics.append(ParseDiagnostics(
-                workbook.name, sheet, len(frame), parsed_count, accession_col, None,
-                None, "parsed_prm_peptides" if parsed_count else "parsed_zero_sites",
-                header_row + 1, header_depth, len(frame.columns), preview,
-            ))
+            diagnostics.append(
+                ParseDiagnostics(
+                    workbook.name,
+                    sheet,
+                    len(frame),
+                    parsed_count,
+                    accession_col,
+                    None,
+                    None,
+                    "parsed_prm_peptides" if parsed_count else "parsed_zero_sites",
+                    header_row + 1,
+                    header_depth,
+                    len(frame.columns),
+                    preview,
+                )
+            )
             continue
 
         # The overlap table has two accession/site/peptide systems in each row.
         if "overlap" in lowered_sheet and {
-            "HUVEC_ID", "HUVEC_Modified site", "MEF_ID", "MEF_Modified site"
+            "HUVEC_ID",
+            "HUVEC_Modified site",
+            "MEF_ID",
+            "MEF_Modified site",
         }.issubset(set(map(str, frame.columns))):
             for row_offset, (_, record) in enumerate(frame.iterrows(), start=1):
                 identity = _numeric(record, "sequence_id")
@@ -756,29 +787,41 @@ def normalize_workbook(
                     sites = extract_sites(record.get(f"{prefix}_Modified site"))
                     peptide = str(record.get(f"{prefix}_peptide", "")).strip()
                     for accession, site, pairing in _pair_accessions_sites(accessions, sites):
-                        rows.append(_base_evidence_row(
-                            species=species,
-                            organism_id=organism_id,
-                            uniprot_accession_raw=accession,
-                            site_uniprot=site,
-                            source_label=source_label,
-                            source_workbook=workbook.name,
-                            source_sheet=sheet,
-                            source_row=header_row + header_depth + row_offset + 1,
-                            pairing_status=f"ortholog_{pairing}",
-                            peptide_sequence=peptide if _is_real_peptide(peptide) else "",
-                            tissue_or_condition=condition,
-                            ortholog_overlap=True,
-                            sequence_identity=identity,
-                            evidence_type="ortholog_overlap",
-                        ))
+                        rows.append(
+                            _base_evidence_row(
+                                species=species,
+                                organism_id=organism_id,
+                                uniprot_accession_raw=accession,
+                                site_uniprot=site,
+                                source_label=source_label,
+                                source_workbook=workbook.name,
+                                source_sheet=sheet,
+                                source_row=header_row + header_depth + row_offset + 1,
+                                pairing_status=f"ortholog_{pairing}",
+                                peptide_sequence=peptide if _is_real_peptide(peptide) else "",
+                                tissue_or_condition=condition,
+                                ortholog_overlap=True,
+                                sequence_identity=identity,
+                                evidence_type="ortholog_overlap",
+                            )
+                        )
             parsed_count = len(rows) - parsed_before
-            diagnostics.append(ParseDiagnostics(
-                workbook.name, sheet, len(frame), parsed_count,
-                "HUVEC_ID | MEF_ID", "HUVEC_Modified site | MEF_Modified site",
-                None, "parsed_overlap_pairs" if parsed_count else "parsed_zero_sites",
-                header_row + 1, header_depth, len(frame.columns), preview,
-            ))
+            diagnostics.append(
+                ParseDiagnostics(
+                    workbook.name,
+                    sheet,
+                    len(frame),
+                    parsed_count,
+                    "HUVEC_ID | MEF_ID",
+                    "HUVEC_Modified site | MEF_Modified site",
+                    None,
+                    "parsed_overlap_pairs" if parsed_count else "parsed_zero_sites",
+                    header_row + 1,
+                    header_depth,
+                    len(frame.columns),
+                    preview,
+                )
+            )
             continue
 
         # Old-vs-young limma tables are already CML-site tables. ``Modified site``
@@ -799,34 +842,53 @@ def normalize_workbook(
                     p_value = _numeric(record, p_col)
                     adj_p = _numeric(record, fdr_col)
                     significant = adj_p is not None and adj_p <= 0.05
-                    direction = "old_higher" if logfc is not None and logfc > 0 else "old_lower" if logfc is not None and logfc < 0 else "no_change"
+                    direction = (
+                        "old_higher"
+                        if logfc is not None and logfc > 0
+                        else "old_lower"
+                        if logfc is not None and logfc < 0
+                        else "no_change"
+                    )
                     for accession, site, pairing in _pair_accessions_sites(accessions, sites):
-                        rows.append(_base_evidence_row(
-                            species="mouse",
-                            organism_id=10090,
-                            uniprot_accession_raw=accession,
-                            site_uniprot=site,
-                            source_label=source_label,
-                            source_workbook=workbook.name,
-                            source_sheet=sheet,
-                            source_row=header_row + header_depth + row_offset + 1,
-                            pairing_status=pairing,
-                            tissue_or_condition=tissue,
-                            age_tested=True,
-                            age_associated=significant,
-                            age_log2fc=logfc,
-                            age_p_value=p_value,
-                            age_adj_p_value=adj_p,
-                            age_direction=direction,
-                            age_significant_tissue=tissue if significant else "",
-                            evidence_type="age_test",
-                        ))
+                        rows.append(
+                            _base_evidence_row(
+                                species="mouse",
+                                organism_id=10090,
+                                uniprot_accession_raw=accession,
+                                site_uniprot=site,
+                                source_label=source_label,
+                                source_workbook=workbook.name,
+                                source_sheet=sheet,
+                                source_row=header_row + header_depth + row_offset + 1,
+                                pairing_status=pairing,
+                                tissue_or_condition=tissue,
+                                age_tested=True,
+                                age_associated=significant,
+                                age_log2fc=logfc,
+                                age_p_value=p_value,
+                                age_adj_p_value=adj_p,
+                                age_direction=direction,
+                                age_significant_tissue=tissue if significant else "",
+                                evidence_type="age_test",
+                            )
+                        )
             parsed_count = len(rows) - parsed_before
-            diagnostics.append(ParseDiagnostics(
-                workbook.name, sheet, len(frame), parsed_count, accession_col, site_col,
-                None, "parsed_age_sites" if parsed_count else "parsed_zero_sites",
-                header_row + 1, header_depth, len(frame.columns), preview,
-            ))
+            diagnostics.append(
+                ParseDiagnostics(
+                    workbook.name,
+                    sheet,
+                    len(frame),
+                    parsed_count,
+                    accession_col,
+                    site_col,
+                    None,
+                    "parsed_age_sites" if parsed_count else "parsed_zero_sites",
+                    header_row + 1,
+                    header_depth,
+                    len(frame.columns),
+                    preview,
+                )
+            )
             continue
 
         # Proteostasis summary stores site as e.g. ``Heart, Kidney (Kidney324)``.
@@ -838,22 +900,38 @@ def normalize_workbook(
                     accessions = extract_accessions(record.get(accession_col))
                     sites, tissues = _proteostasis_site_and_tissues(record.get(site_col))
                     for accession, site, pairing in _pair_accessions_sites(accessions, sites):
-                        rows.append(_base_evidence_row(
-                            species="mouse", organism_id=10090,
-                            uniprot_accession_raw=accession, site_uniprot=site,
-                            source_label=source_label, source_workbook=workbook.name,
-                            source_sheet=sheet,
-                            source_row=header_row + header_depth + row_offset + 1,
-                            pairing_status=pairing,
-                            tissue_or_condition=tissues or sheet,
-                            evidence_type="proteostasis_site",
-                        ))
+                        rows.append(
+                            _base_evidence_row(
+                                species="mouse",
+                                organism_id=10090,
+                                uniprot_accession_raw=accession,
+                                site_uniprot=site,
+                                source_label=source_label,
+                                source_workbook=workbook.name,
+                                source_sheet=sheet,
+                                source_row=header_row + header_depth + row_offset + 1,
+                                pairing_status=pairing,
+                                tissue_or_condition=tissues or sheet,
+                                evidence_type="proteostasis_site",
+                            )
+                        )
             parsed_count = len(rows) - parsed_before
-            diagnostics.append(ParseDiagnostics(
-                workbook.name, sheet, len(frame), parsed_count, accession_col, site_col,
-                None, "parsed_proteostasis_sites" if parsed_count else "parsed_zero_sites",
-                header_row + 1, header_depth, len(frame.columns), preview,
-            ))
+            diagnostics.append(
+                ParseDiagnostics(
+                    workbook.name,
+                    sheet,
+                    len(frame),
+                    parsed_count,
+                    accession_col,
+                    site_col,
+                    None,
+                    "parsed_proteostasis_sites" if parsed_count else "parsed_zero_sites",
+                    header_row + 1,
+                    header_depth,
+                    len(frame.columns),
+                    preview,
+                )
+            )
             continue
 
         # Generic site-table fallback.
@@ -864,39 +942,60 @@ def normalize_workbook(
         if accession_col is None:
             accession_col = _infer_content_column(frame, extract_accessions, minimum_matches=1)
         if site_col is None:
-            site_col = _infer_content_column(frame, extract_sites, excluded=([accession_col] if accession_col else []))
+            site_col = _infer_content_column(
+                frame, extract_sites, excluded=([accession_col] if accession_col else [])
+            )
         validation_cols = [
-            str(column) for column in frame.columns
+            str(column)
+            for column in frame.columns
             if any(alias in _canonical_column(column) for alias in VALIDATION_ALIASES)
         ]
         if accession_col is None or site_col is None:
-            diagnostics.append(ParseDiagnostics(
-                workbook.name, sheet, len(frame), 0, accession_col, site_col,
-                modification_col, "skipped_missing_required_columns",
-                header_row + 1, header_depth, len(frame.columns), preview,
-            ))
+            diagnostics.append(
+                ParseDiagnostics(
+                    workbook.name,
+                    sheet,
+                    len(frame),
+                    0,
+                    accession_col,
+                    site_col,
+                    modification_col,
+                    "skipped_missing_required_columns",
+                    header_row + 1,
+                    header_depth,
+                    len(frame.columns),
+                    preview,
+                )
+            )
             continue
 
         for row_offset, (_, record) in enumerate(frame.iterrows(), start=1):
             row_text = " | ".join(str(value) for value in record.tolist() if pd.notna(value))
-            species, organism_id = infer_species(f"{source_label} {sheet} {row_text}", default=default_species)
+            species, organism_id = infer_species(
+                f"{source_label} {sheet} {row_text}", default=default_species
+            )
             if species is None:
                 continue
             site_text = str(record.get(site_col, ""))
-            if _bool_from_text(site_text, ("n-term", "nterm", "protnterm", "protein n termin")) and not extract_sites(site_text):
+            if _bool_from_text(
+                site_text, ("n-term", "nterm", "protnterm", "protein n termin")
+            ) and not extract_sites(site_text):
                 continue
             # Apply a modification-type restriction only to a distinct type column.
             if modification_col and modification_col != site_col:
                 modification_text = str(record.get(modification_col, ""))
                 if modification_text and not _bool_from_text(
-                    modification_text.lower(), ("cml", "carboxymethyl", "cm(k)", "cm-k", "cm k", "lys")
+                    modification_text.lower(),
+                    ("cml", "carboxymethyl", "cm(k)", "cm-k", "cm k", "lys"),
                 ):
                     continue
             accessions = extract_accessions(record.get(accession_col))
             sites = extract_sites(record.get(site_col))
             if not accessions or not sites:
                 continue
-            tissue_text = str(record.get(tissue_col, "")).strip() if tissue_col else _sheet_tissue(sheet)
+            tissue_text = (
+                str(record.get(tissue_col, "")).strip() if tissue_col else _sheet_tissue(sheet)
+            )
             prm_validated = any(
                 _bool_from_text(record.get(column, ""), ("yes", "true", "prm", "validated", "1"))
                 for column in validation_cols
@@ -905,24 +1004,40 @@ def normalize_workbook(
             if not _is_real_peptide(peptide):
                 peptide = ""
             for accession, site, pairing_status in _pair_accessions_sites(accessions, sites):
-                rows.append(_base_evidence_row(
-                    species=species, organism_id=organism_id,
-                    uniprot_accession_raw=accession, site_uniprot=site,
-                    source_label=source_label, source_workbook=workbook.name,
-                    source_sheet=sheet,
-                    source_row=header_row + header_depth + row_offset + 1,
-                    pairing_status=pairing_status,
-                    peptide_sequence=peptide,
-                    tissue_or_condition=tissue_text or sheet,
-                    prm_validated=bool(prm_validated),
-                    evidence_type="discovery_site",
-                ))
+                rows.append(
+                    _base_evidence_row(
+                        species=species,
+                        organism_id=organism_id,
+                        uniprot_accession_raw=accession,
+                        site_uniprot=site,
+                        source_label=source_label,
+                        source_workbook=workbook.name,
+                        source_sheet=sheet,
+                        source_row=header_row + header_depth + row_offset + 1,
+                        pairing_status=pairing_status,
+                        peptide_sequence=peptide,
+                        tissue_or_condition=tissue_text or sheet,
+                        prm_validated=bool(prm_validated),
+                        evidence_type="discovery_site",
+                    )
+                )
         parsed_count = len(rows) - parsed_before
-        diagnostics.append(ParseDiagnostics(
-            workbook.name, sheet, len(frame), parsed_count, accession_col, site_col,
-            modification_col, "parsed" if parsed_count else "parsed_zero_sites",
-            header_row + 1, header_depth, len(frame.columns), preview,
-        ))
+        diagnostics.append(
+            ParseDiagnostics(
+                workbook.name,
+                sheet,
+                len(frame),
+                parsed_count,
+                accession_col,
+                site_col,
+                modification_col,
+                "parsed" if parsed_count else "parsed_zero_sites",
+                header_row + 1,
+                header_depth,
+                len(frame.columns),
+                preview,
+            )
+        )
     return pd.DataFrame(rows), diagnostics
 
 
@@ -936,7 +1051,9 @@ def aggregate_candidate_evidence(frame: pd.DataFrame) -> pd.DataFrame:
     key = ["species", "organism_id", "uniprot_accession_raw", "site_uniprot"]
 
     def join_unique(values: Iterable[object]) -> str:
-        unique = sorted({str(value).strip() for value in values if pd.notna(value) and str(value).strip()})
+        unique = sorted(
+            {str(value).strip() for value in values if pd.notna(value) and str(value).strip()}
+        )
         return " | ".join(unique)
 
     def join_peptides(values: Iterable[object]) -> str:
@@ -950,31 +1067,46 @@ def aggregate_candidate_evidence(frame: pd.DataFrame) -> pd.DataFrame:
             source_sheets=("source_sheet", join_unique),
             evidence_types=("evidence_type", join_unique),
             tissues_conditions=("tissue_or_condition", join_unique),
-            tissue_condition_count=("tissue_or_condition", lambda x: len({str(v).strip() for v in x if pd.notna(v) and str(v).strip()})),
+            tissue_condition_count=(
+                "tissue_or_condition",
+                lambda x: len({str(v).strip() for v in x if pd.notna(v) and str(v).strip()}),
+            ),
             prm_validated=("prm_validated", "max"),
             age_tested=("age_tested", "max"),
             age_associated=("age_associated", "max"),
             age_tested_tissues=("tissue_or_condition", join_unique),
             age_significant_tissues=("age_significant_tissue", join_unique),
             age_min_adj_p=("age_adj_p_value", "min"),
-            age_max_abs_log2fc=("age_log2fc", lambda x: pd.to_numeric(x, errors="coerce").abs().max()),
+            age_max_abs_log2fc=(
+                "age_log2fc",
+                lambda x: pd.to_numeric(x, errors="coerce").abs().max(),
+            ),
             age_directions=("age_direction", join_unique),
             ortholog_overlap=("ortholog_overlap", "max"),
             sequence_identity_max=("sequence_identity", "max"),
             peptide_examples=("peptide_sequence", join_peptides),
-            ambiguous_mapping=("pairing_status", lambda values: any(str(value).startswith("ambiguous") for value in values)),
+            ambiguous_mapping=(
+                "pairing_status",
+                lambda values: any(str(value).startswith("ambiguous") for value in values),
+            ),
         )
         .reset_index()
     )
     # Only age-test evidence should populate the tested-tissue field.
     age_tissues = (
         frame[frame["age_tested"].fillna(False).astype(bool)]
-        .groupby(key)["tissue_or_condition"].agg(join_unique)
+        .groupby(key)["tissue_or_condition"]
+        .agg(join_unique)
     )
-    aggregated["age_tested_tissues"] = [age_tissues.get(tuple(row[k] for k in key), "") for _, row in aggregated.iterrows()]
+    aggregated["age_tested_tissues"] = [
+        age_tissues.get(tuple(row[k] for k in key), "") for _, row in aggregated.iterrows()
+    ]
     aggregated["candidate_id"] = (
-        aggregated["species"].astype(str) + ":" + aggregated["uniprot_accession_raw"].astype(str)
-        + ":K" + aggregated["site_uniprot"].astype(int).astype(str)
+        aggregated["species"].astype(str)
+        + ":"
+        + aggregated["uniprot_accession_raw"].astype(str)
+        + ":K"
+        + aggregated["site_uniprot"].astype(int).astype(str)
     )
     aggregated["evidence_score_raw"] = (
         np.log1p(aggregated["evidence_rows"].astype(float))
@@ -999,7 +1131,9 @@ def prepare_candidate_table(
     for workbook in workbooks:
         label = workbook.stem
         default = "mouse" if "mouse" in label.lower() or "organ" in label.lower() else None
-        parsed, parsed_diagnostics = normalize_workbook(workbook, source_label=label, default_species=default)
+        parsed, parsed_diagnostics = normalize_workbook(
+            workbook, source_label=label, default_species=default
+        )
         if not parsed.empty:
             raw_frames.append(parsed)
         diagnostics.extend(parsed_diagnostics)
@@ -1015,8 +1149,11 @@ def prepare_candidate_table(
         defaults = _base_evidence_row(
             source_row=np.arange(1, len(manual) + 1),
             source_workbook=manual_candidate_csv.name,
-            source_sheet="manual", source_label="manual", pairing_status="manual",
-            tissue_or_condition="manual", evidence_type="manual",
+            source_sheet="manual",
+            source_label="manual",
+            pairing_status="manual",
+            tissue_or_condition="manual",
+            evidence_type="manual",
         )
         for column, value in defaults.items():
             if column not in manual.columns:
@@ -1024,7 +1161,9 @@ def prepare_candidate_table(
         raw_frames.append(manual)
 
     diagnostics_csv.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame([diagnostic.__dict__ for diagnostic in diagnostics]).to_csv(diagnostics_csv, index=False)
+    pd.DataFrame([diagnostic.__dict__ for diagnostic in diagnostics]).to_csv(
+        diagnostics_csv, index=False
+    )
     if not raw_frames:
         raise ValueError(
             "No CML site candidates were parsed. Diagnostics were written to "
@@ -1144,6 +1283,7 @@ def fetch_uniprot_records(
         return _empty_uniprot_records()
     return pd.DataFrame(normalized_records)
 
+
 def _append_pipe(existing: object, incoming: object) -> str:
     values: set[str] = set()
     for value in (existing, incoming):
@@ -1156,15 +1296,18 @@ def _append_pipe(existing: object, incoming: object) -> str:
 def _recompute_evidence_score(frame: pd.DataFrame) -> pd.DataFrame:
     result = frame.copy()
     for column, default in (
-        ("evidence_rows", 1), ("tissue_condition_count", 1),
-        ("prm_validated", False), ("age_associated", False),
+        ("evidence_rows", 1),
+        ("tissue_condition_count", 1),
+        ("prm_validated", False),
+        ("age_associated", False),
         ("ortholog_overlap", False),
     ):
         if column not in result.columns:
             result[column] = default
     result["evidence_score_raw"] = (
         np.log1p(pd.to_numeric(result["evidence_rows"], errors="coerce").fillna(1.0))
-        + 0.5 * np.log1p(pd.to_numeric(result["tissue_condition_count"], errors="coerce").fillna(1.0))
+        + 0.5
+        * np.log1p(pd.to_numeric(result["tissue_condition_count"], errors="coerce").fillna(1.0))
         + result["prm_validated"].fillna(False).astype(float)
         + 0.5 * result["age_associated"].fillna(False).astype(float)
         + 0.25 * result["ortholog_overlap"].fillna(False).astype(float)
@@ -1177,7 +1320,12 @@ def _map_prm_evidence(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     if prm.empty:
         empty = prm.copy()
-        for column in ("uniprot_accession", "prm_mapping_status", "prm_mapping_reason", "mapped_site_uniprot"):
+        for column in (
+            "uniprot_accession",
+            "prm_mapping_status",
+            "prm_mapping_reason",
+            "mapped_site_uniprot",
+        ):
             if column not in empty.columns:
                 empty[column] = pd.Series(dtype="object")
         return empty.copy(), empty.copy()
@@ -1189,19 +1337,30 @@ def _map_prm_evidence(
     mapped_rows: list[dict[str, object]] = []
     excluded_rows: list[dict[str, object]] = []
     for _, row in work.iterrows():
-        site, status, reason = map_cml_peptide_to_sequence(row.get("peptide_sequence"), row.get("sequence"))
+        site, status, reason = map_cml_peptide_to_sequence(
+            row.get("peptide_sequence"), row.get("sequence")
+        )
         record = row.to_dict()
         record["prm_mapping_status"] = status
         record["prm_mapping_reason"] = reason
         record["mapped_site_uniprot"] = site
         expected = pd.to_numeric(row.get("organism_id"), errors="coerce")
         observed = pd.to_numeric(row.get("organism_id_uniprot"), errors="coerce")
-        if status == "mapped" and pd.notna(expected) and pd.notna(observed) and int(expected) != int(observed):
+        if (
+            status == "mapped"
+            and pd.notna(expected)
+            and pd.notna(observed)
+            and int(expected) != int(observed)
+        ):
             record["prm_mapping_status"] = "excluded"
             record["prm_mapping_reason"] = "organism_mismatch"
             status = "excluded"
         (mapped_rows if status == "mapped" else excluded_rows).append(record)
-    columns = list(work.columns) + ["prm_mapping_status", "prm_mapping_reason", "mapped_site_uniprot"]
+    columns = list(work.columns) + [
+        "prm_mapping_status",
+        "prm_mapping_reason",
+        "mapped_site_uniprot",
+    ]
     mapped = pd.DataFrame(mapped_rows)
     excluded = pd.DataFrame(excluded_rows)
     if mapped.empty:
@@ -1223,7 +1382,9 @@ def annotate_candidates_with_uniprot(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     candidates = pd.read_csv(candidates_csv)
     if "uniprot_accession_raw" not in candidates.columns:
-        raise ValueError("Candidate table is missing 'uniprot_accession_raw'. Re-run Stage 4 prepare.")
+        raise ValueError(
+            "Candidate table is missing 'uniprot_accession_raw'. Re-run Stage 4 prepare."
+        )
     candidates["uniprot_accession"] = candidates["uniprot_accession_raw"].map(
         lambda value: normalize_uniprot_accession(value, keep_isoform=False)
     )
@@ -1247,9 +1408,13 @@ def annotate_candidates_with_uniprot(
         all_accessions.extend(prm["uniprot_accession"].tolist())
     records = fetch_uniprot_records(all_accessions, cache_dir)
 
-    mapped_prm, excluded_prm = _map_prm_evidence(prm, records) if not prm.empty else (pd.DataFrame(), pd.DataFrame())
+    mapped_prm, excluded_prm = (
+        _map_prm_evidence(prm, records) if not prm.empty else (pd.DataFrame(), pd.DataFrame())
+    )
     prm_mapping_csv = prm_mapping_csv or output_csv.with_name("stage4_prm_mapping.csv")
-    prm_mapping_excluded_csv = prm_mapping_excluded_csv or excluded_csv.with_name("stage4_excluded_prm_mapping.csv")
+    prm_mapping_excluded_csv = prm_mapping_excluded_csv or excluded_csv.with_name(
+        "stage4_excluded_prm_mapping.csv"
+    )
     prm_mapping_csv.parent.mkdir(parents=True, exist_ok=True)
     mapped_prm.to_csv(prm_mapping_csv, index=False)
     excluded_prm.to_csv(prm_mapping_excluded_csv, index=False)
@@ -1270,39 +1435,67 @@ def annotate_candidates_with_uniprot(
             if mask.any():
                 index = valid_candidates.index[mask][0]
                 valid_candidates.at[index, "prm_validated"] = True
-                current_evidence = pd.to_numeric(valid_candidates.at[index, "evidence_rows"], errors="coerce")
-                valid_candidates.at[index, "evidence_rows"] = (int(current_evidence) if pd.notna(current_evidence) else 0) + 1
-                valid_candidates.at[index, "source_workbooks"] = _append_pipe(valid_candidates.at[index, "source_workbooks"], prm_row.get("source_workbook"))
-                valid_candidates.at[index, "source_sheets"] = _append_pipe(valid_candidates.at[index, "source_sheets"], prm_row.get("source_sheet"))
-                valid_candidates.at[index, "evidence_types"] = _append_pipe(valid_candidates.at[index, "evidence_types"] if "evidence_types" in valid_candidates.columns else "", "prm_peptide")
-                valid_candidates.at[index, "tissues_conditions"] = _append_pipe(valid_candidates.at[index, "tissues_conditions"], prm_row.get("tissue_or_condition"))
-                valid_candidates.at[index, "tissue_condition_count"] = len([part for part in str(valid_candidates.at[index, "tissues_conditions"]).split("|") if part.strip()])
-                valid_candidates.at[index, "peptide_examples"] = _append_pipe(valid_candidates.at[index, "peptide_examples"], peptide)
+                current_evidence = pd.to_numeric(
+                    valid_candidates.at[index, "evidence_rows"], errors="coerce"
+                )
+                valid_candidates.at[index, "evidence_rows"] = (
+                    int(current_evidence) if pd.notna(current_evidence) else 0
+                ) + 1
+                valid_candidates.at[index, "source_workbooks"] = _append_pipe(
+                    valid_candidates.at[index, "source_workbooks"], prm_row.get("source_workbook")
+                )
+                valid_candidates.at[index, "source_sheets"] = _append_pipe(
+                    valid_candidates.at[index, "source_sheets"], prm_row.get("source_sheet")
+                )
+                valid_candidates.at[index, "evidence_types"] = _append_pipe(
+                    valid_candidates.at[index, "evidence_types"]
+                    if "evidence_types" in valid_candidates.columns
+                    else "",
+                    "prm_peptide",
+                )
+                valid_candidates.at[index, "tissues_conditions"] = _append_pipe(
+                    valid_candidates.at[index, "tissues_conditions"],
+                    prm_row.get("tissue_or_condition"),
+                )
+                valid_candidates.at[index, "tissue_condition_count"] = len(
+                    [
+                        part
+                        for part in str(valid_candidates.at[index, "tissues_conditions"]).split("|")
+                        if part.strip()
+                    ]
+                )
+                valid_candidates.at[index, "peptide_examples"] = _append_pipe(
+                    valid_candidates.at[index, "peptide_examples"], peptide
+                )
             else:
                 new_row = {column: np.nan for column in valid_candidates.columns}
-                new_row.update({
-                    "species": species,
-                    "organism_id": int(prm_row["organism_id"]),
-                    "uniprot_accession_raw": accession,
-                    "uniprot_accession": accession,
-                    "site_uniprot": site,
-                    "evidence_rows": 1,
-                    "source_workbooks": str(prm_row.get("source_workbook", "")),
-                    "source_sheets": str(prm_row.get("source_sheet", "")),
-                    "evidence_types": "prm_peptide",
-                    "tissues_conditions": str(prm_row.get("tissue_or_condition", "PRM")),
-                    "tissue_condition_count": 1,
-                    "prm_validated": True,
-                    "age_tested": False,
-                    "age_associated": False,
-                    "age_tested_tissues": "",
-                    "age_significant_tissues": "",
-                    "ortholog_overlap": False,
-                    "peptide_examples": peptide,
-                    "ambiguous_mapping": False,
-                    "candidate_id": f"{species}:{accession}:K{site}",
-                })
-                valid_candidates = pd.concat([valid_candidates, pd.DataFrame([new_row])], ignore_index=True, sort=False)
+                new_row.update(
+                    {
+                        "species": species,
+                        "organism_id": int(prm_row["organism_id"]),
+                        "uniprot_accession_raw": accession,
+                        "uniprot_accession": accession,
+                        "site_uniprot": site,
+                        "evidence_rows": 1,
+                        "source_workbooks": str(prm_row.get("source_workbook", "")),
+                        "source_sheets": str(prm_row.get("source_sheet", "")),
+                        "evidence_types": "prm_peptide",
+                        "tissues_conditions": str(prm_row.get("tissue_or_condition", "PRM")),
+                        "tissue_condition_count": 1,
+                        "prm_validated": True,
+                        "age_tested": False,
+                        "age_associated": False,
+                        "age_tested_tissues": "",
+                        "age_significant_tissues": "",
+                        "ortholog_overlap": False,
+                        "peptide_examples": peptide,
+                        "ambiguous_mapping": False,
+                        "candidate_id": f"{species}:{accession}:K{site}",
+                    }
+                )
+                valid_candidates = pd.concat(
+                    [valid_candidates, pd.DataFrame([new_row])], ignore_index=True, sort=False
+                )
         valid_candidates = _recompute_evidence_score(valid_candidates)
 
     if valid_candidates.empty:
@@ -1386,12 +1579,7 @@ def deterministic_quick_subset(
 
     working = frame.copy()
     working["_quick_protein_key"] = (
-        working[accession_column]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-        .str.split("-")
-        .str[0]
+        working[accession_column].astype(str).str.strip().str.upper().str.split("-").str[0]
     )
 
     if (

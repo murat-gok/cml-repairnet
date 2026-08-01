@@ -29,9 +29,16 @@ def _mapped_identity(alignment, sequence_a: str, sequence_b: str) -> tuple[int, 
 
 def run_residue_conservation(pairs: pd.DataFrame, config: dict) -> pd.DataFrame:
     required = {
-        "source_gene", "target_gene", "uniprot_accession_human", "uniprot_accession_mouse",
-        "site_uniprot_human", "site_uniprot_mouse", "sequence_human", "sequence_mouse",
-        "repairability_extra_trees_human", "repairability_extra_trees_mouse",
+        "source_gene",
+        "target_gene",
+        "uniprot_accession_human",
+        "uniprot_accession_mouse",
+        "site_uniprot_human",
+        "site_uniprot_mouse",
+        "sequence_human",
+        "sequence_mouse",
+        "repairability_extra_trees_human",
+        "repairability_extra_trees_mouse",
     }
     missing = sorted(required - set(pairs.columns))
     if missing:
@@ -71,35 +78,52 @@ def run_residue_conservation(pairs: pd.DataFrame, config: dict) -> pd.DataFrame:
                 continue
             local_total += 1
             local_identical += human_sequence[human_position] == mouse_sequence[mouse_position]
-        identical, aligned, global_identity = _mapped_identity(alignment, human_sequence, mouse_sequence)
+        identical, aligned, global_identity = _mapped_identity(
+            alignment, human_sequence, mouse_sequence
+        )
 
-        rows.append({
-            "human_gene": row.source_gene,
-            "mouse_gene": row.target_gene,
-            "human_accession": row.uniprot_accession_human,
-            "mouse_accession": row.uniprot_accession_mouse,
-            "human_site": human_site,
-            "mouse_site": mouse_site,
-            "human_residue": human_residue,
-            "mouse_residue": mouse_residue,
-            "mapped_mouse_site_from_human": mapped_mouse_site,
-            "mapped_human_site_from_mouse": mapped_human_site,
-            "reciprocal_site_alignment": reciprocal,
-            "both_declared_sites_are_lysine": human_residue == "K" and mouse_residue == "K",
-            "residue_level_conserved_lysine": reciprocal and human_residue == "K" and mouse_residue == "K",
-            "same_uniprot_site_number": human_site == mouse_site,
-            "site_number_difference": abs(human_site - mouse_site),
-            "local_window_radius": radius,
-            "local_aligned_positions": local_total,
-            "local_sequence_identity": local_identical / local_total if local_total else np.nan,
-            "global_aligned_positions": aligned,
-            "global_sequence_identity": global_identity,
-            "alignment_score": float(alignment.score),
-            "repairability_human": float(row.repairability_extra_trees_human),
-            "repairability_mouse": float(row.repairability_extra_trees_mouse),
-            "repairability_abs_difference": abs(float(row.repairability_extra_trees_human) - float(row.repairability_extra_trees_mouse)),
-        })
-    return pd.DataFrame(rows).sort_values(
-        ["residue_level_conserved_lysine", "local_sequence_identity", "repairability_abs_difference"],
-        ascending=[False, False, True],
-    ).reset_index(drop=True)
+        rows.append(
+            {
+                "human_gene": row.source_gene,
+                "mouse_gene": row.target_gene,
+                "human_accession": row.uniprot_accession_human,
+                "mouse_accession": row.uniprot_accession_mouse,
+                "human_site": human_site,
+                "mouse_site": mouse_site,
+                "human_residue": human_residue,
+                "mouse_residue": mouse_residue,
+                "mapped_mouse_site_from_human": mapped_mouse_site,
+                "mapped_human_site_from_mouse": mapped_human_site,
+                "reciprocal_site_alignment": reciprocal,
+                "both_declared_sites_are_lysine": human_residue == "K" and mouse_residue == "K",
+                "residue_level_conserved_lysine": reciprocal
+                and human_residue == "K"
+                and mouse_residue == "K",
+                "same_uniprot_site_number": human_site == mouse_site,
+                "site_number_difference": abs(human_site - mouse_site),
+                "local_window_radius": radius,
+                "local_aligned_positions": local_total,
+                "local_sequence_identity": local_identical / local_total if local_total else np.nan,
+                "global_aligned_positions": aligned,
+                "global_sequence_identity": global_identity,
+                "alignment_score": float(alignment.score),
+                "repairability_human": float(row.repairability_extra_trees_human),
+                "repairability_mouse": float(row.repairability_extra_trees_mouse),
+                "repairability_abs_difference": abs(
+                    float(row.repairability_extra_trees_human)
+                    - float(row.repairability_extra_trees_mouse)
+                ),
+            }
+        )
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "residue_level_conserved_lysine",
+                "local_sequence_identity",
+                "repairability_abs_difference",
+            ],
+            ascending=[False, False, True],
+        )
+        .reset_index(drop=True)
+    )

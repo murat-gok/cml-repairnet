@@ -3,8 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 from urllib.parse import urljoin
 
 import requests
@@ -90,10 +90,10 @@ def list_pride_files(base_url: str = PRIDE_BASE_URL) -> list[str]:
 
 def select_small_processed_files(names: Iterable[str]) -> list[str]:
     patterns = [
-        re.compile(r"processed_filt_quant\.csv$", re.I),
-        re.compile(r"peptide_IDs_repository\.csv$", re.I),
-        re.compile(r"Mapping_raw_files\.csv$", re.I),
-        re.compile(r"\.sdrf\.tsv$", re.I),
+        re.compile(r"processed_filt_quant\.csv$", re.IGNORECASE),
+        re.compile(r"peptide_IDs_repository\.csv$", re.IGNORECASE),
+        re.compile(r"Mapping_raw_files\.csv$", re.IGNORECASE),
+        re.compile(r"\.sdrf\.tsv$", re.IGNORECASE),
     ]
     return sorted(name for name in names if any(pattern.search(name) for pattern in patterns))
 

@@ -23,7 +23,20 @@ def project_root_from_script() -> Path:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="CML-RepairNet Stage 6 robustness analysis")
-    parser.add_argument("command", choices=("doctor", "rank", "conservation", "enrichment", "network", "tiers", "figures", "report", "all"))
+    parser.add_argument(
+        "command",
+        choices=(
+            "doctor",
+            "rank",
+            "conservation",
+            "enrichment",
+            "network",
+            "tiers",
+            "figures",
+            "report",
+            "all",
+        ),
+    )
     parser.add_argument("--project-root", type=Path, default=project_root_from_script())
     return parser
 

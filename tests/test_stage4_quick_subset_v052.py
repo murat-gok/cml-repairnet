@@ -43,6 +43,4 @@ def test_quick_subset_accepts_post_annotation_accession_schema() -> None:
         }
     )
     selected = deterministic_quick_subset(frame, max_proteins=25, max_sites=60)
-    pd.testing.assert_frame_equal(
-        selected.reset_index(drop=True), frame.reset_index(drop=True)
-    )
+    pd.testing.assert_frame_equal(selected.reset_index(drop=True), frame.reset_index(drop=True))

@@ -96,7 +96,9 @@ def build_bsa_labels(
             sequence[position - 1] if 1 <= position <= len(sequence) else "?"
             for position in df["site_uniprot"]
         ]
-        invalid = df.loc[df["residue_uniprot"] != "K", ["site_paper", "site_uniprot", "residue_uniprot"]]
+        invalid = df.loc[
+            df["residue_uniprot"] != "K", ["site_paper", "site_uniprot", "residue_uniprot"]
+        ]
         if not invalid.empty:
             raise ValueError(
                 "Site-number mapping failed; expected lysine at every mapped UniProt position:\n"

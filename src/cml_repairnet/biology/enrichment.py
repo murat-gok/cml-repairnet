@@ -128,7 +128,11 @@ def flatten_gprofiler_response(
             if np.isfinite(term_size) and np.isfinite(effective_domain) and effective_domain > 0
             else np.nan
         )
-        fold_enrichment = precision / background_fraction if background_fraction and background_fraction > 0 else np.nan
+        fold_enrichment = (
+            precision / background_fraction
+            if background_fraction and background_fraction > 0
+            else np.nan
+        )
         intersection_genes = _extract_intersection_genes(item, response)
         rows.append(
             {
@@ -209,9 +213,13 @@ def run_enrichment(
             if organism not in seen_versions:
                 try:
                     versions = client.data_versions(organism)
-                    version_rows.append({"organism": organism, "versions_json": json.dumps(versions)})
+                    version_rows.append(
+                        {"organism": organism, "versions_json": json.dumps(versions)}
+                    )
                 except Exception as exc:  # version metadata must not fail the analysis
-                    version_rows.append({"organism": organism, "versions_json": "", "error": str(exc)})
+                    version_rows.append(
+                        {"organism": organism, "versions_json": "", "error": str(exc)}
+                    )
                 seen_versions.add(organism)
         except OfflineCacheMiss as exc:
             status = "offline_cache_missing"
@@ -247,7 +255,9 @@ def leading_enrichment_terms(
     significant = enrichment.loc[enrichment["significant"].fillna(False)].copy()
     if significant.empty:
         return significant
-    significant["p_value_adjusted"] = pd.to_numeric(significant["p_value_adjusted"], errors="coerce")
+    significant["p_value_adjusted"] = pd.to_numeric(
+        significant["p_value_adjusted"], errors="coerce"
+    )
     significant["fold_enrichment"] = pd.to_numeric(significant["fold_enrichment"], errors="coerce")
     return (
         significant.sort_values(

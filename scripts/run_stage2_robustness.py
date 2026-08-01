@@ -36,9 +36,11 @@ def main() -> None:
     structure = pd.read_csv(paths["structure_features"])
 
     feature_sets = ["sequence", "structure", "combined"]
-    targets = ["repair_published"] if args.mode == "quick" else [
-        "repair_published", "repair_from_means_clipped"
-    ]
+    targets = (
+        ["repair_published"]
+        if args.mode == "quick"
+        else ["repair_published", "repair_from_means_clipped"]
+    )
     group_counts = [4] if args.mode == "quick" else [3, 4, 5]
 
     result_root = Path(paths["results_dir"]) / "stage2_robustness"
@@ -100,7 +102,20 @@ def main() -> None:
         .first()
     )
     print("\nBest model per analysis:")
-    print(best[["feature_set", "target", "spatial_groups", "model", "mae", "spearman_rho", "r2", "n_features"]].to_string(index=False))
+    print(
+        best[
+            [
+                "feature_set",
+                "target",
+                "spatial_groups",
+                "model",
+                "mae",
+                "spearman_rho",
+                "r2",
+                "n_features",
+            ]
+        ].to_string(index=False)
+    )
     print(f"\nMetrics: {metrics_path}")
     print(f"Paired comparisons: {comparisons_path}")
     print(f"Report: {report_path}")

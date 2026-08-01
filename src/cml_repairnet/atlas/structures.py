@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
-import math
 import re
 import time
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -33,9 +33,7 @@ TRANSFER_FEATURES = (
 )
 
 
-_RETRYABLE_STRUCTURE_REASON_PREFIXES = (
-    "structure_processing_error:",
-)
+_RETRYABLE_STRUCTURE_REASON_PREFIXES = ("structure_processing_error:",)
 
 
 def _is_retryable_structure_reason(value: object) -> bool:
@@ -80,6 +78,7 @@ def _request_with_outer_retry(operation, *, attempts: int = 3, backoff_seconds: 
                 raise
             time.sleep(float(backoff_seconds) * (2 ** (attempt - 1)))
     raise last_error  # pragma: no cover
+
 
 _AF_ENTRY_ACCESSION = re.compile(
     r"^AF-(?P<accession>[A-Z0-9]{6,10}(?:-\d+)?)-F\d+(?:-v\d+)?$",
@@ -259,9 +258,7 @@ def select_entry_for_site(
             int(entry.uniprot_end) - int(position),
         )
         confidence = (
-            float(entry.global_metric_value)
-            if entry.global_metric_value is not None
-            else -1.0
+            float(entry.global_metric_value) if entry.global_metric_value is not None else -1.0
         )
         return (
             0 if exact_accession else 1,
@@ -411,9 +408,7 @@ def extract_site_features_from_structure(
     for record in candidates.itertuples(index=False):
         site = int(record.site_uniprot)
         reference_sequence = _clean_sequence(getattr(record, "sequence", None))
-        model_accession = (
-            entry.model_accession or _accession_from_entry_id(entry.entry_id)
-        )
+        model_accession = entry.model_accession or _accession_from_entry_id(entry.entry_id)
         sequence_match = _entry_sequence_matches_reference(entry, reference_sequence)
         site_match = _entry_site_residue_matches(entry, site, reference_sequence)
         residue, structure_number, mapping = _resolve_residue_number(residues, site, entry)
@@ -559,13 +554,9 @@ def _process_accession(
                 else pd.DataFrame(missing_rows)
             )
     except Exception as exc:  # retain failure, but retry it automatically next run
-        new_frame = pending[
-            ["candidate_id", "species", "uniprot_accession", "site_uniprot"]
-        ].copy()
+        new_frame = pending[["candidate_id", "species", "uniprot_accession", "site_uniprot"]].copy()
         new_frame["structure_status"] = "excluded"
-        new_frame["structure_reason"] = (
-            f"structure_processing_error:{type(exc).__name__}:{exc}"
-        )
+        new_frame["structure_reason"] = f"structure_processing_error:{type(exc).__name__}:{exc}"
 
     combined = pd.concat([stable_cached, new_frame], ignore_index=True, sort=False)
     current_ids = set(candidates["candidate_id"].astype(str))
@@ -609,9 +600,7 @@ def build_alphafold_features(
         }
         for future in as_completed(futures):
             frames.append(future.result())
-    features = (
-        pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame()
-    )
+    features = pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame()
     merged = candidates.merge(
         features,
         on=["candidate_id", "species", "uniprot_accession", "site_uniprot"],
@@ -623,9 +612,7 @@ def build_alphafold_features(
         pd.to_numeric(merged.get("site_plddt"), errors="coerce") < min_site_plddt,
         "site_plddt_below_threshold",
         np.where(
-            pd.to_numeric(
-                merged.get("low_confidence_neighbor_fraction_8a"), errors="coerce"
-            )
+            pd.to_numeric(merged.get("low_confidence_neighbor_fraction_8a"), errors="coerce")
             > max_low_confidence_neighbor_fraction,
             "low_confidence_neighborhood",
             "",
@@ -636,9 +623,7 @@ def build_alphafold_features(
     )
     merged["structure_quality_reason"] = np.where(
         ~eligible_mask,
-        merged.get("structure_reason", "structure_not_eligible").fillna(
-            "structure_not_eligible"
-        ),
+        merged.get("structure_reason", "structure_not_eligible").fillna("structure_not_eligible"),
         quality_reason,
     )
     eligible = merged[merged["structure_quality_status"] == "eligible"].copy()

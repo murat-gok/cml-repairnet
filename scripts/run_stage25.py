@@ -115,9 +115,15 @@ def write_report(
     reference_text = (
         primary_reference[
             [
-                "model", "baseline", "model_mae", "baseline_mae",
-                "relative_improvement_pct", "improvement_ci_2.5",
-                "improvement_ci_97.5", "permutation_p_one_sided", "fdr_q_global",
+                "model",
+                "baseline",
+                "model_mae",
+                "baseline_mae",
+                "relative_improvement_pct",
+                "improvement_ci_2.5",
+                "improvement_ci_97.5",
+                "permutation_p_one_sided",
+                "fdr_q_global",
             ]
         ].to_string(index=False)
         if not primary_reference.empty
@@ -140,8 +146,14 @@ def write_report(
         "```text",
         primary[
             [
-                "model", "mae", "rmse", "spearman_rho", "r2",
-                "mae_ci_2.5", "mae_ci_97.5", "mean_selected_features",
+                "model",
+                "mae",
+                "rmse",
+                "spearman_rho",
+                "r2",
+                "mae_ci_2.5",
+                "mae_ci_97.5",
+                "mean_selected_features",
             ]
         ].to_string(index=False),
         "```",
@@ -151,8 +163,14 @@ def write_report(
         "```text",
         best[
             [
-                "target", "spatial_groups", "weight_mode", "feature_mode",
-                "model", "mae", "spearman_rho", "r2",
+                "target",
+                "spatial_groups",
+                "weight_mode",
+                "feature_mode",
+                "model",
+                "mae",
+                "spearman_rho",
+                "r2",
             ]
         ].to_string(index=False),
         "```",
@@ -162,9 +180,15 @@ def write_report(
         "```text",
         comparisons[
             [
-                "target", "spatial_groups", "weight_mode", "feature_mode", "model",
-                "relative_improvement_pct", "improvement_ci_2.5",
-                "improvement_ci_97.5", "permutation_p_one_sided",
+                "target",
+                "spatial_groups",
+                "weight_mode",
+                "feature_mode",
+                "model",
+                "relative_improvement_pct",
+                "improvement_ci_2.5",
+                "improvement_ci_97.5",
+                "permutation_p_one_sided",
             ]
         ].to_string(index=False),
         "```",
@@ -306,8 +330,12 @@ def main() -> None:
     if raw_importance.empty:
         importance_frame = pd.DataFrame(
             columns=[
-                "model", "feature", "importance_mean",
-                "importance_sd_across_folds", "mean_within_fold_sd", "folds",
+                "model",
+                "feature",
+                "importance_mean",
+                "importance_sd_across_folds",
+                "mean_within_fold_sd",
+                "folds",
             ]
         )
     else:
@@ -343,8 +371,9 @@ def main() -> None:
     ].sort_values("mae")
     print("\nPrimary Stage 2.5 ranking:")
     print(
-        primary[["model", "mae", "spearman_rho", "r2", "mae_ci_2.5", "mae_ci_97.5"]]
-        .to_string(index=False)
+        primary[["model", "mae", "spearman_rho", "r2", "mae_ci_2.5", "mae_ci_97.5"]].to_string(
+            index=False
+        )
     )
     print(f"\nMetrics: {metrics_path}")
     print(f"Predictions: {predictions_path}")

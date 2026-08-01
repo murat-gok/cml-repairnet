@@ -75,7 +75,5 @@ def test_transient_failure_is_retried_but_permanent_row_is_cached() -> None:
 
     assert stable["candidate_id"].tolist() == ["human:P00001:K20"]
     assert pending["candidate_id"].tolist() == ["human:P00001:K10"]
-    assert _is_retryable_structure_reason(
-        "structure_processing_error:ConnectionError:dns"
-    )
+    assert _is_retryable_structure_reason("structure_processing_error:ConnectionError:dns")
     assert not _is_retryable_structure_reason("alphafold_entry_not_found")

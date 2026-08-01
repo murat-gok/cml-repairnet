@@ -9,10 +9,10 @@ import pandas as pd
 from cml_repairnet.atlas.modeling import score_candidate_features
 from cml_repairnet.atlas.prioritize import prioritize_atlas
 from cml_repairnet.atlas.sources import (
+    annotate_candidates_with_uniprot,
     deterministic_quick_subset,
     download_stage4_source_data,
     prepare_candidate_table,
-    annotate_candidates_with_uniprot,
 )
 from cml_repairnet.atlas.structures import build_alphafold_features
 
@@ -54,14 +54,19 @@ def doctor_stage4(project_root: Path) -> dict[str, Any]:
         "bsa_structure_features": project_root / "data/processed/bsa_structure_features.csv",
     }
     status = {
-        name: {"path": str(path), "exists": path.exists()}
-        for name, path in required_prior.items()
+        name: {"path": str(path), "exists": path.exists()} for name, path in required_prior.items()
     }
     status["stage3_model_freeze_recommended"] = {
         "path": str(project_root / "results/stage3"),
         "exists": (project_root / "results/stage3").exists(),
     }
-    status["ready"] = all(item["exists"] for item in status.values() if isinstance(item, dict) and "exists" in item and not item.get("path", "").endswith("results/stage3"))
+    status["ready"] = all(
+        item["exists"]
+        for item in status.values()
+        if isinstance(item, dict)
+        and "exists" in item
+        and not item.get("path", "").endswith("results/stage3")
+    )
     paths["results"].mkdir(parents=True, exist_ok=True)
     (paths["results"] / "stage4_doctor.json").write_text(
         json.dumps(status, indent=2), encoding="utf-8"
@@ -207,15 +212,17 @@ def audit_stage4(project_root: Path) -> dict[str, Any]:
     cache_incomplete_structure_rows = 0
     if paths["structure_excluded"].exists():
         structure_excluded = pd.read_csv(paths["structure_excluded"])
-        reasons = structure_excluded.get(
-            "structure_quality_reason", pd.Series("", index=structure_excluded.index)
-        ).fillna("").astype(str)
+        reasons = (
+            structure_excluded.get(
+                "structure_quality_reason", pd.Series("", index=structure_excluded.index)
+            )
+            .fillna("")
+            .astype(str)
+        )
         retryable_structure_failures = int(
             reasons.str.startswith("structure_processing_error:").sum()
         )
-        cache_incomplete_structure_rows = int(
-            reasons.eq("structure_not_eligible").sum()
-        )
+        cache_incomplete_structure_rows = int(reasons.eq("structure_not_eligible").sum())
     audit["retryable_structure_failures"] = retryable_structure_failures
     audit["cache_incomplete_structure_rows"] = cache_incomplete_structure_rows
     audit["structure_completion_status"] = (
@@ -276,7 +283,9 @@ def run_stage4_all(
 ) -> dict[str, Any]:
     doctor = doctor_stage4(project_root)
     if not doctor["ready"]:
-        raise RuntimeError("Stage 4 prerequisites are missing. Run Stage 1–3 data preparation first.")
+        raise RuntimeError(
+            "Stage 4 prerequisites are missing. Run Stage 1–3 data preparation first."
+        )
     paths = stage4_paths(project_root)
     if candidate_csv is None and not all(
         (paths["raw"] / name).exists()

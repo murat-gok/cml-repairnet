@@ -19,7 +19,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Fit a descriptive full-data tree model and export SHAP values."
     )
-    parser.add_argument("--model", choices=["extra_trees", "xgboost", "lightgbm"], default="extra_trees")
+    parser.add_argument(
+        "--model", choices=["extra_trees", "xgboost", "lightgbm"], default="extra_trees"
+    )
     parser.add_argument("--target", default="repair_published")
     parser.add_argument("--groups", type=int, default=4)
     parser.add_argument("--weight-mode", choices=["none", "clipped", "sqrt"], default="none")
@@ -33,7 +35,9 @@ def main() -> None:
     try:
         import shap
     except ImportError as exc:
-        raise SystemExit("SHAP is not installed. Run: python -m pip install -e '.[experiment]'") from exc
+        raise SystemExit(
+            "SHAP is not installed. Run: python -m pip install -e '.[experiment]'"
+        ) from exc
 
     config = load_config(args.config)
     seed = int(config["project"]["seed"])

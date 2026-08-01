@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 
@@ -57,9 +56,7 @@ def audit_stage1_tables(
         raise DataAuditError("Structure-feature keys do not match label keys.")
 
     missing_structure = int(
-        pd.to_numeric(structure_features["structure_missing"], errors="coerce")
-        .fillna(1)
-        .sum()
+        pd.to_numeric(structure_features["structure_missing"], errors="coerce").fillna(1).sum()
     )
     if missing_structure:
         raise DataAuditError(
@@ -70,7 +67,7 @@ def audit_stage1_tables(
     delta = (target - reconstructed).abs()
     report: dict[str, Any] = {
         "status": "pass",
-        "n_sites": int(len(labels)),
+        "n_sites": len(labels),
         "n_sequence_columns": int(sequence_features.shape[1]),
         "n_structure_columns": int(structure_features.shape[1]),
         "target_min": float(target.min()),

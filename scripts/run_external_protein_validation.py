@@ -18,7 +18,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--site-predictions", type=Path, required=True)
     parser.add_argument("--protein-labels", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path("results/protein_external_validation.csv"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("results/protein_external_validation.csv")
+    )
     parser.add_argument(
         "--aggregation", choices=["mean", "median", "confidence_weighted"], default="mean"
     )
@@ -56,15 +58,13 @@ def main() -> None:
     if not {"protein_id", "observed_protein_repair"}.issubset(labels.columns):
         raise ValueError("protein labels require protein_id and observed_protein_repair")
 
-    merged = aggregate(sites, args.aggregation).merge(labels, on="protein_id", validate="one_to_one")
+    merged = aggregate(sites, args.aggregation).merge(
+        labels, on="protein_id", validate="one_to_one"
+    )
     if len(merged) < 3:
         raise ValueError("At least three proteins are required for an informative consistency test")
-    rho = spearmanr(
-        merged["observed_protein_repair"], merged["predicted_protein_repair"]
-    ).statistic
-    mae = mean_absolute_error(
-        merged["observed_protein_repair"], merged["predicted_protein_repair"]
-    )
+    rho = spearmanr(merged["observed_protein_repair"], merged["predicted_protein_repair"]).statistic
+    mae = mean_absolute_error(merged["observed_protein_repair"], merged["predicted_protein_repair"])
     merged["global_spearman"] = rho
     merged["global_mae"] = mae
     merged["interpretation"] = "external consistency only; not site-level validation"

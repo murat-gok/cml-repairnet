@@ -50,10 +50,7 @@ def main() -> None:
         report = run_stage1(load_config(args.config), download=not args.no_download)
         print("Stage 1 completed and audited.")
         print(f"Sites: {report['n_sites']}")
-        print(
-            "Published/reconstructed target MAE: "
-            f"{report['published_vs_reconstructed_mae']:.4f}"
-        )
+        print(f"Published/reconstructed target MAE: {report['published_vs_reconstructed_mae']:.4f}")
         print("Report: results/stage1_data_audit.md")
         return
     raise RuntimeError(f"Unhandled command: {args.command}")

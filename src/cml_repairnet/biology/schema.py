@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
@@ -79,7 +79,9 @@ def load_atlas(path: Path, *, name: str | None = None) -> pd.DataFrame:
     frame = frame.copy()
     frame["gene_symbol"] = frame["gene_names"].map(first_gene_symbol)
     frame["canonical_accession"] = frame["uniprot_accession"].map(canonical_accession)
-    frame["site_label"] = frame["gene_symbol"].fillna("") + " K" + frame["site_uniprot"].astype(int).astype(str)
+    frame["site_label"] = (
+        frame["gene_symbol"].fillna("") + " K" + frame["site_uniprot"].astype(int).astype(str)
+    )
     return frame
 
 
@@ -100,7 +102,11 @@ def select_species(frame: pd.DataFrame, species: str) -> pd.DataFrame:
 
 
 def evidence_rich_mask(frame: pd.DataFrame) -> pd.Series:
-    columns = [column for column in ("prm_validated", "age_associated", "ortholog_overlap") if column in frame]
+    columns = [
+        column
+        for column in ("prm_validated", "age_associated", "ortholog_overlap")
+        if column in frame
+    ]
     if not columns:
         return pd.Series(False, index=frame.index)
     return frame[columns].fillna(False).astype(bool).any(axis=1)

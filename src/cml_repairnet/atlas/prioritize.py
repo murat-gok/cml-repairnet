@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -147,9 +147,7 @@ def add_pareto_ranking(
     eligible_mask = result["applicability_status"].isin(list(eligible_statuses))
     eligible = result.loc[eligible_mask]
     for species, group in eligible.groupby("species", sort=False):
-        objective_parts = [
-            _minmax(group[column]).to_numpy(dtype=float) for column in maximize
-        ] + [
+        objective_parts = [_minmax(group[column]).to_numpy(dtype=float) for column in maximize] + [
             _minmax(group[column], invert=True).to_numpy(dtype=float) for column in minimize
         ]
         values = np.column_stack(objective_parts)
@@ -229,9 +227,9 @@ def prioritize_atlas(
         max_sites_per_protein=max_sites_per_protein,
     )
     output_dir.mkdir(parents=True, exist_ok=True)
-    ranked.sort_values(
-        ["pareto_front", "weighted_priority_score"], ascending=[True, False]
-    ).to_csv(output_dir / "cml_repairability_atlas_all_sites.csv", index=False)
+    ranked.sort_values(["pareto_front", "weighted_priority_score"], ascending=[True, False]).to_csv(
+        output_dir / "cml_repairability_atlas_all_sites.csv", index=False
+    )
     in_domain.sort_values("weighted_priority_score", ascending=False).to_csv(
         output_dir / "cml_repairability_atlas_in_domain.csv", index=False
     )

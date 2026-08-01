@@ -1,27 +1,27 @@
 from __future__ import annotations
 
 import json
-import math
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import joblib
 import numpy as np
 import pandas as pd
+from scipy.stats import spearmanr
 from sklearn.base import clone
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GroupKFold
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
-from scipy.stats import spearmanr
 
 from cml_repairnet.atlas.structures import TRANSFER_FEATURES
-from cml_repairnet.models.stage25 import build_sample_weights, _selected_feature_names
 from cml_repairnet.models.stage3 import (
     _conformal_quantile,
     seeded_spatial_groups,
     stage3_frozen_estimators,
 )
+from cml_repairnet.models.stage25 import _selected_feature_names, build_sample_weights
 
 MODEL_NAMES = ("extra_trees", "lightgbm", "ridge")
 MODEL_WEIGHT_MODES: Mapping[str, str] = {
@@ -58,9 +58,9 @@ def _build_ood_reference(X: pd.DataFrame, n_neighbors: int = 5) -> dict[str, Any
     values = scaler.transform(filled)
     k = max(1, min(int(n_neighbors), len(values) - 1))
     reference_nn = NearestNeighbors(n_neighbors=k + 1).fit(values)
-    reference_distances = reference_nn.kneighbors(values, return_distance=True)[0][
-        :, 1:
-    ].mean(axis=1)
+    reference_distances = reference_nn.kneighbors(values, return_distance=True)[0][:, 1:].mean(
+        axis=1
+    )
     neighbor_model = NearestNeighbors(n_neighbors=k).fit(values)
     return {
         "feature_columns": list(X.columns),
@@ -78,9 +78,9 @@ def _score_ood(reference: Mapping[str, Any], X: pd.DataFrame) -> tuple[np.ndarra
     medians = pd.Series(reference["medians"], dtype=float)
     numeric = numeric.fillna(medians)
     transformed = reference["scaler"].transform(numeric)
-    distances = reference["neighbor_model"].kneighbors(
-        transformed, return_distance=True
-    )[0].mean(axis=1)
+    distances = (
+        reference["neighbor_model"].kneighbors(transformed, return_distance=True)[0].mean(axis=1)
+    )
     reference_distances = np.asarray(reference["reference_distances"], dtype=float)
     percentiles = np.asarray(
         [(reference_distances <= value).mean() for value in distances], dtype=float
@@ -100,7 +100,11 @@ def fit_transfer_safe_bundle(
 ) -> dict[str, Any]:
     labels = pd.read_csv(labels_csv)
     structures = pd.read_csv(bsa_structure_features_csv)
-    merge_keys = [column for column in ("protein_id", "site_uniprot") if column in labels.columns and column in structures.columns]
+    merge_keys = [
+        column
+        for column in ("protein_id", "site_uniprot")
+        if column in labels.columns and column in structures.columns
+    ]
     if not merge_keys:
         merge_keys = ["site_uniprot"]
     frame = labels.merge(structures, on=merge_keys, how="inner", suffixes=("", "_structure"))
@@ -122,13 +126,9 @@ def fit_transfer_safe_bundle(
         fold_index[test_idx] = fold
         for name in MODEL_NAMES:
             weights = build_sample_weights(frame.iloc[train_idx], MODEL_WEIGHT_MODES[name])
-            fitted = _fit_with_weights(
-                estimators[name], X.iloc[train_idx], y[train_idx], weights
-            )
+            fitted = _fit_with_weights(estimators[name], X.iloc[train_idx], y[train_idx], weights)
             oof[name][test_idx] = np.clip(fitted.predict(X.iloc[test_idx]), 0.0, 1.0)
-            selected_by_model[name].append(
-                _selected_feature_names(fitted, list(TRANSFER_FEATURES))
-            )
+            selected_by_model[name].append(_selected_feature_names(fitted, list(TRANSFER_FEATURES)))
 
     residuals = np.abs(y - oof["extra_trees"])
     conformal_q = _conformal_quantile(residuals, conformal_alpha)
@@ -141,7 +141,13 @@ def fit_transfer_safe_bundle(
         selected_final[name] = _selected_feature_names(fitted, list(TRANSFER_FEATURES))
 
     model_metrics = {name: _metrics(y, oof[name]) for name in MODEL_NAMES}
-    oof_frame = frame[[column for column in ("protein_id", "site_uniprot", "site_paper") if column in frame.columns]].copy()
+    oof_frame = frame[
+        [
+            column
+            for column in ("protein_id", "site_uniprot", "site_paper")
+            if column in frame.columns
+        ]
+    ].copy()
     oof_frame["y_true"] = y
     oof_frame["spatial_group"] = groups
     oof_frame["fold"] = fold_index
@@ -260,9 +266,9 @@ def score_candidate_features(
         )
         rank_columns.append(rank_column)
     frame["consensus_rank_percentile"] = frame[rank_columns].mean(axis=1)
-    frame["model_disagreement"] = frame[
-        [f"repairability_{name}" for name in MODEL_NAMES]
-    ].std(axis=1)
+    frame["model_disagreement"] = frame[[f"repairability_{name}" for name in MODEL_NAMES]].std(
+        axis=1
+    )
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     frame.to_csv(output_csv, index=False)
     return frame

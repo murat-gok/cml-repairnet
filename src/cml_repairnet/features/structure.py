@@ -26,9 +26,9 @@ def _resolve_pdb_site(record: object, pdb_site_column: str) -> int:
     if hasattr(record, pdb_site_column):
         return int(getattr(record, pdb_site_column))
     if hasattr(record, "site_pdb"):
-        return int(getattr(record, "site_pdb"))
+        return int(record.site_pdb)
     if hasattr(record, "site_uniprot"):
-        return int(getattr(record, "site_uniprot"))
+        return int(record.site_uniprot)
     raise ValueError("No structure-coordinate site column was found in the labels table.")
 
 

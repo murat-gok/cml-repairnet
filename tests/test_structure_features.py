@@ -4,7 +4,6 @@ import pandas as pd
 
 from cml_repairnet.features.structure import build_structure_features
 
-
 PDB_TEXT = """\
 ATOM      1  N   LYS A  41       0.000   0.000   0.000  1.00 20.00           N  
 ATOM      2  CA  LYS A  41       1.500   0.000   0.000  1.00 21.00           C  
@@ -26,9 +25,9 @@ def test_structure_features_use_mature_pdb_numbering(tmp_path: Path) -> None:
     pdb = tmp_path / "mini.pdb"
     output = tmp_path / "features.csv"
     # Paper/mature BSA position 41 corresponds to UniProt precursor position 65.
-    pd.DataFrame(
-        {"protein_id": ["P02769"], "site_paper": [41], "site_uniprot": [65]}
-    ).to_csv(labels, index=False)
+    pd.DataFrame({"protein_id": ["P02769"], "site_paper": [41], "site_uniprot": [65]}).to_csv(
+        labels, index=False
+    )
     pdb.write_text(PDB_TEXT, encoding="utf-8")
 
     frame = build_structure_features(labels, pdb, output)

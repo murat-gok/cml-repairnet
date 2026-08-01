@@ -8,10 +8,26 @@ from Bio import SeqIO
 
 AA20 = list("ACDEFGHIKLMNPQRSTVWY")
 HYDROPATHY = {
-    "A": 1.8, "C": 2.5, "D": -3.5, "E": -3.5, "F": 2.8,
-    "G": -0.4, "H": -3.2, "I": 4.5, "K": -3.9, "L": 3.8,
-    "M": 1.9, "N": -3.5, "P": -1.6, "Q": -3.5, "R": -4.5,
-    "S": -0.8, "T": -0.7, "V": 4.2, "W": -0.9, "Y": -1.3,
+    "A": 1.8,
+    "C": 2.5,
+    "D": -3.5,
+    "E": -3.5,
+    "F": 2.8,
+    "G": -0.4,
+    "H": -3.2,
+    "I": 4.5,
+    "K": -3.9,
+    "L": 3.8,
+    "M": 1.9,
+    "N": -3.5,
+    "P": -1.6,
+    "Q": -3.5,
+    "R": -4.5,
+    "S": -0.8,
+    "T": -0.7,
+    "V": 4.2,
+    "W": -0.9,
+    "Y": -1.3,
 }
 AROMATIC = set("FWY")
 BULKY_HYDROPHOBIC = set("FWLVIY")
@@ -66,7 +82,9 @@ def build_sequence_features(
             "distance_to_c_terminus": len(sequence) - site,
             "window_mean_hydropathy": float(np.mean([HYDROPATHY[a] for a in valid])),
             "window_aromatic_fraction": float(np.mean([a in AROMATIC for a in valid])),
-            "window_bulky_hydrophobic_fraction": float(np.mean([a in BULKY_HYDROPHOBIC for a in valid])),
+            "window_bulky_hydrophobic_fraction": float(
+                np.mean([a in BULKY_HYDROPHOBIC for a in valid])
+            ),
             "window_acidic_fraction": float(np.mean([a in ACIDIC for a in valid])),
             "window_basic_fraction": float(np.mean([a in BASIC for a in valid])),
             "window_polar_fraction": float(np.mean([a in POLAR for a in valid])),
@@ -80,7 +98,9 @@ def build_sequence_features(
         for offset in range(-5, 6):
             if offset == 0:
                 continue
-            aa = sequence[center_zero + offset] if 0 <= center_zero + offset < len(sequence) else "X"
+            aa = (
+                sequence[center_zero + offset] if 0 <= center_zero + offset < len(sequence) else "X"
+            )
             prefix = f"pos_{offset:+d}"
             row[f"{prefix}_hydropathy"] = HYDROPATHY.get(aa, 0.0)
             row[f"{prefix}_aromatic"] = _indicator(aa, AROMATIC)

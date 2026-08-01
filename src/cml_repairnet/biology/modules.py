@@ -20,7 +20,9 @@ MODULE_FEATURES = [
 ]
 
 
-def choose_k(values: np.ndarray, *, min_k: int = 2, max_k: int = 6, random_state: int = 42) -> tuple[int, pd.DataFrame]:
+def choose_k(
+    values: np.ndarray, *, min_k: int = 2, max_k: int = 6, random_state: int = 42
+) -> tuple[int, pd.DataFrame]:
     rows = []
     upper = min(max_k, len(values) - 1)
     if upper < min_k:
@@ -38,7 +40,9 @@ def choose_k(values: np.ndarray, *, min_k: int = 2, max_k: int = 6, random_state
 def _module_label(profile: pd.Series, global_median: pd.Series) -> str:
     high_repair = profile["repairability_extra_trees"] >= global_median["repairability_extra_trees"]
     high_evidence = profile["evidence_score_raw"] >= global_median["evidence_score_raw"]
-    high_reliability = profile["transfer_reliability_score"] >= global_median["transfer_reliability_score"]
+    high_reliability = (
+        profile["transfer_reliability_score"] >= global_median["transfer_reliability_score"]
+    )
     if high_repair and high_evidence and high_reliability:
         return "high-repair evidence-rich reliable"
     if high_repair and high_reliability:
@@ -63,9 +67,11 @@ def build_candidate_modules(
     transform = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
     values = transform.fit_transform(matrix)
     best_k, selection = choose_k(values, max_k=max_k, random_state=random_state)
-    labels = np.zeros(len(frame), dtype=int) if best_k == 1 else KMeans(
-        n_clusters=best_k, random_state=random_state, n_init=100
-    ).fit_predict(values)
+    labels = (
+        np.zeros(len(frame), dtype=int)
+        if best_k == 1
+        else KMeans(n_clusters=best_k, random_state=random_state, n_init=100).fit_predict(values)
+    )
     assignments = frame.copy()
     assignments["module_id"] = labels + 1
     profiles = assignments.groupby("module_id")[MODULE_FEATURES].mean()
@@ -73,8 +79,14 @@ def build_candidate_modules(
     profiles["module_label"] = profiles.apply(_module_label, axis=1, global_median=global_median)
     profiles["sites"] = assignments.groupby("module_id").size()
     profiles["proteins"] = assignments.groupby("module_id")["uniprot_accession"].nunique()
-    profiles["human_sites"] = assignments.groupby("module_id")["species"].apply(lambda x: int((x == "human").sum()))
-    profiles["mouse_sites"] = assignments.groupby("module_id")["species"].apply(lambda x: int((x == "mouse").sum()))
+    profiles["human_sites"] = assignments.groupby("module_id")["species"].apply(
+        lambda x: int((x == "human").sum())
+    )
+    profiles["mouse_sites"] = assignments.groupby("module_id")["species"].apply(
+        lambda x: int((x == "mouse").sum())
+    )
     profiles = profiles.reset_index()
-    assignments = assignments.merge(profiles[["module_id", "module_label"]], on="module_id", how="left")
+    assignments = assignments.merge(
+        profiles[["module_id", "module_label"]], on="module_id", how="left"
+    )
     return assignments, profiles, selection

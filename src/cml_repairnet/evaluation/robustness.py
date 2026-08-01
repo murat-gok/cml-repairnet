@@ -145,13 +145,24 @@ def write_markdown_summary(
         .first()
     )
     best_columns = [
-        "feature_set", "target", "spatial_groups", "model", "mae",
-        "spearman_rho", "r2", "n_features",
+        "feature_set",
+        "target",
+        "spatial_groups",
+        "model",
+        "mae",
+        "spearman_rho",
+        "r2",
+        "n_features",
     ]
     comparison_columns = [
-        "feature_set", "target", "spatial_groups", "model",
-        "relative_improvement_pct", "improvement_ci_2.5",
-        "improvement_ci_97.5", "permutation_p_one_sided",
+        "feature_set",
+        "target",
+        "spatial_groups",
+        "model",
+        "relative_improvement_pct",
+        "improvement_ci_2.5",
+        "improvement_ci_97.5",
+        "permutation_p_one_sided",
     ]
     lines = [
         "# CML-RepairNet Stage 2 Robustness Report",

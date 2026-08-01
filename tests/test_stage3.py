@@ -26,7 +26,12 @@ def _coordinate_frame() -> pd.DataFrame:
 def test_assign_bsa_domains_uses_mature_numbering() -> None:
     domains = assign_bsa_domains(_coordinate_frame())
     assert domains.tolist() == [
-        "domain_I", "domain_I", "domain_II", "domain_II", "domain_III", "domain_III"
+        "domain_I",
+        "domain_I",
+        "domain_II",
+        "domain_II",
+        "domain_III",
+        "domain_III",
     ]
 
 

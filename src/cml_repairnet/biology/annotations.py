@@ -54,7 +54,9 @@ def family_summary(annotations: pd.DataFrame) -> pd.DataFrame:
     if annotations.empty or "protein_families" not in annotations:
         return pd.DataFrame(columns=["protein_family", "proteins", "accessions"])
     rows = []
-    for row in annotations[["uniprot_accession", "protein_families"]].dropna().itertuples(index=False):
+    for row in (
+        annotations[["uniprot_accession", "protein_families"]].dropna().itertuples(index=False)
+    ):
         text = str(row.protein_families)
         families = [part.strip() for part in re.split(r"[;|]", text) if part.strip()]
         for family in families:
@@ -90,11 +92,15 @@ def run_uniprot_annotations(
         annotations, families = pd.DataFrame(), pd.DataFrame()
         status, error = "failed", f"{type(exc).__name__}: {exc}"
     metadata = client.cached_metadata()
-    manifest = pd.DataFrame([{
-        "input_accessions": len(accessions),
-        "annotated_accessions": len(annotations),
-        "status": status,
-        "error": error,
-        "response_metadata_json": __import__("json").dumps(metadata),
-    }])
+    manifest = pd.DataFrame(
+        [
+            {
+                "input_accessions": len(accessions),
+                "annotated_accessions": len(annotations),
+                "status": status,
+                "error": error,
+                "response_metadata_json": __import__("json").dumps(metadata),
+            }
+        ]
+    )
     return annotations, families, manifest

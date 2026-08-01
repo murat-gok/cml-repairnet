@@ -35,12 +35,20 @@ def make_figures(
 
     if not conservation.empty:
         fig, ax = plt.subplots(figsize=(6, 6))
-        ax.scatter(conservation["repairability_human"], conservation["repairability_mouse"], alpha=0.8)
-        lower = min(conservation["repairability_human"].min(), conservation["repairability_mouse"].min())
-        upper = max(conservation["repairability_human"].max(), conservation["repairability_mouse"].max())
+        ax.scatter(
+            conservation["repairability_human"], conservation["repairability_mouse"], alpha=0.8
+        )
+        lower = min(
+            conservation["repairability_human"].min(), conservation["repairability_mouse"].min()
+        )
+        upper = max(
+            conservation["repairability_human"].max(), conservation["repairability_mouse"].max()
+        )
         ax.plot([lower, upper], [lower, upper], linestyle="--")
         for row in conservation.itertuples(index=False):
-            ax.annotate(row.human_gene, (row.repairability_human, row.repairability_mouse), fontsize=7)
+            ax.annotate(
+                row.human_gene, (row.repairability_human, row.repairability_mouse), fontsize=7
+            )
         ax.set_xlabel("Human Extra Trees repairability")
         ax.set_ylabel("Mouse Extra Trees repairability")
         ax.set_title("Residue-level ortholog candidate concordance")
@@ -50,8 +58,15 @@ def make_figures(
     if not enrichment.empty:
         top = enrichment.sort_values("adjusted_p_value_stage5").head(25).copy()
         fig, ax = plt.subplots(figsize=(9, 7))
-        labels = (top["species"] + " | " + top["source"] + " | " + top["term_name"]).str.slice(0, 80)
-        ax.barh(range(len(top)), -top["adjusted_p_value_stage5"].clip(lower=1e-300).map(lambda value: __import__('math').log10(value)))
+        labels = (top["species"] + " | " + top["source"] + " | " + top["term_name"]).str.slice(
+            0, 80
+        )
+        ax.barh(
+            range(len(top)),
+            -top["adjusted_p_value_stage5"]
+            .clip(lower=1e-300)
+            .map(lambda value: __import__("math").log10(value)),
+        )
         ax.set_yticks(range(len(top)), labels)
         ax.invert_yaxis()
         ax.set_xlabel("-log10(Stage 5 adjusted p-value)")
@@ -71,7 +86,11 @@ def make_figures(
         count += 1
 
     fig, ax = plt.subplots(figsize=(7, 5))
-    counts = tiers["candidate_tier"].value_counts().reindex(["Tier 1", "Tier 2", "Tier 3", "Watchlist"], fill_value=0)
+    counts = (
+        tiers["candidate_tier"]
+        .value_counts()
+        .reindex(["Tier 1", "Tier 2", "Tier 3", "Watchlist"], fill_value=0)
+    )
     ax.bar(counts.index, counts.values)
     ax.set_ylabel("Candidate sites")
     ax.set_title("Stage 6 final candidate tiers")

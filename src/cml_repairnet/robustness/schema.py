@@ -84,7 +84,9 @@ def first_gene(value: object) -> str:
 def add_labels(frame: pd.DataFrame) -> pd.DataFrame:
     result = frame.copy()
     if "gene_symbol" not in result:
-        result["gene_symbol"] = result.get("gene_names", pd.Series(index=result.index, dtype=object)).map(first_gene)
+        result["gene_symbol"] = result.get(
+            "gene_names", pd.Series(index=result.index, dtype=object)
+        ).map(first_gene)
     if "site_label" not in result and "site_uniprot" in result:
         site = pd.to_numeric(result["site_uniprot"], errors="coerce").astype("Int64").astype(str)
         result["site_label"] = result["gene_symbol"].fillna("") + " K" + site
