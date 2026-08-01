@@ -5,9 +5,9 @@ import json
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 import requests
@@ -137,7 +137,7 @@ class CachedHttpClient:
             }
         }
         metadata = {
-            "retrieved_at_utc": datetime.now(UTC).isoformat(),
+            "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
             "url": response.url,
             "status_code": response.status_code,
             "headers": selected_headers,
@@ -153,7 +153,7 @@ class CachedHttpClient:
                 row = json.loads(path.read_text(encoding="utf-8"))
                 row["cache_file"] = path.name
                 rows.append(row)
-            except Exception:
+            except Exception:  # noqa: BLE001, S112
                 continue
         return rows
 
@@ -288,7 +288,7 @@ class StringClient(CachedHttpClient):
 
 class UniProtAnnotationClient(CachedHttpClient):
     base_url = "https://rest.uniprot.org/uniprotkb/search"
-    fields = [
+    fields: ClassVar[list[str]] = [
         "accession",
         "id",
         "gene_names",

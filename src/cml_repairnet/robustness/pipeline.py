@@ -27,7 +27,7 @@ def doctor_stage6(root: Path) -> dict:
 
 
 def rank_stage6(root: Path) -> dict:
-    paths = input_paths(root)
+    paths = input_paths(root)  # restored for rank_stage6
     outputs = output_paths(root)
     config = load_config(root)
     in_domain = read_csv(paths.atlas_in_domain, required=("candidate_id",))
@@ -46,7 +46,7 @@ def rank_stage6(root: Path) -> dict:
 
 
 def conservation_stage6(root: Path) -> dict:
-    paths = input_paths(root)
+    paths = input_paths(root)  # restored for conservation_stage6
     outputs = output_paths(root)
     config = load_config(root)
     pairs = read_csv(
@@ -61,7 +61,7 @@ def conservation_stage6(root: Path) -> dict:
 
 
 def enrichment_stage6(root: Path) -> dict:
-    paths = input_paths(root)
+    paths = input_paths(root)  # restored for enrichment_stage6
     outputs = output_paths(root)
     config = load_config(root)
     enrichment = read_csv(paths.enrichment, required=("term_id", "intersection_genes"))
@@ -78,7 +78,7 @@ def enrichment_stage6(root: Path) -> dict:
 
 
 def network_stage6(root: Path) -> dict:
-    paths = input_paths(root)
+    paths = input_paths(root)  # restored for network_stage6
     outputs = output_paths(root)
     config = load_config(root)
     edges = read_csv(paths.string_edges, required=("node_a", "node_b", "combined_score"))
@@ -94,7 +94,7 @@ def network_stage6(root: Path) -> dict:
 
 
 def tiers_stage6(root: Path) -> dict:
-    paths = input_paths(root)
+    paths = input_paths(root)  # restored for tiers_stage6
     outputs = output_paths(root)
     config = load_config(root)
     atlas_all = read_csv(paths.atlas_all, required=("candidate_id", "applicability_status"))
@@ -125,7 +125,6 @@ def figures_stage6(root: Path) -> dict:
 
 
 def report_stage6(root: Path) -> dict:
-    paths = input_paths(root)
     outputs = output_paths(root)
     config = load_config(root)
     stability = read_csv(outputs.processed / "stage6_rank_stability.csv")
