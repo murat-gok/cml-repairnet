@@ -1,0 +1,57 @@
+\documentclass[11pt,a4paper]{letter}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{microtype}
+\pagestyle{empty}
+\begin{document}
+\noindent\textbf{Prof.\ Dr.\ Murat Gök}\\
+Department of Computer Engineering, Faculty of Engineering\\
+Yalova University, Yalova, Türkiye\\
+murat.gok@yalova.edu.tr\\
+ORCID 0000-0003-2261-9288
+
+\vspace{1.2em}
+\noindent\today
+
+\vspace{1.2em}
+\noindent Prof.\ John R.\ Yates, III\\
+Editor-in-Chief, \emph{Journal of Proteome Research}
+
+\vspace{1.2em}
+\noindent Dear Professor Yates,
+
+I am pleased to submit the manuscript ``Condition identity and label weighting govern structure-response inference from reused site-resolved PTM data: a reanalysis of enzymatic carboxymethyllysine repair'' for consideration as an original research article.
+
+The manuscript addresses a question that the journal's readership is particularly well placed to judge: when site-resolved measurements of how a post-translational modification responds to a perturbation are reused as quantitative labels, which analytical choices determine what can legitimately be inferred from them? It is a computational study of deposited proteomics data and of the derivation steps that stand between an archive and a conclusion, and it falls under the journal's scope item covering ``computational methods including bioinformatics, artificial intelligence and machine learning, or other software tools to aid in data analysis and analysis of experimental systems.'' The subject of the work is the data themselves.
+
+The test case is ProteomeXchange PXD070124, which accompanies the first report of an enzyme that reverses $N^{\varepsilon}$-carboxymethyllysine. It is an unusually clean case because the modification was long regarded as terminal, so these are the first site-level response measurements of their kind, and because the archive deposits more than the published analysis uses.
+
+Three contributions follow.
+
+The first is a service to anyone reusing this dataset. The archive contains site-level quantification for four substrate loads, and the published site-level figure reports one of them without identifying which. Using replicate-level agreement, the number of sites passing the confidence threshold, and the number of highly responsive sites, I identify it as the 500 ng condition. The consequence for reuse is concrete: a secondary user who takes labels from that figure inherits one condition together with the particular set of lysines that passed the confidence threshold at that load, and neither inheritance is visible from the figure. The manuscript recommends that site-level figures drawn from multi-condition experiments state their condition explicitly, which costs nothing and prevents exactly this ambiguity.
+
+The second is a label-construction result with a clear mechanism and immediate practical reach. Converting active-versus-control abundance ratios into inverse-variance sample weights is a natural step, since the delta-method variance is readily available, and it is the step the original pipeline took. I show that it is counterproductive for this class of measurement. The weights span up to five orders of magnitude, the Kish effective sample size falls to between 0.23 and 0.32 of the nominal site count, and the structure-response relationship is recovered in three of four conditions under weighting against four of four without it, with higher rank correlations in three of the four. Clipping the weights reproduces the weighted outcome rather than the unweighted one, locating the difficulty in the direction of the weighting rather than in a few extreme values. The mechanism generalises beyond this dataset: the delta-method variance carries the control mean in its denominator, so low-occupancy sites are systematically downweighted even though low occupancy is a property of the site and not noise about the relationship being estimated. Any ratio-based response label is exposed to this.
+
+The third is the biological result those choices make visible. With labels constructed accordingly, local structural descriptors carry permutation-controlled predictive information about site-specific repair at all four substrate loads (empirical P = 0.010, 0.005, 0.005 and 0.005), which converts the qualitative structural trends noted in the source report into a quantitative and condition-replicated finding. The manuscript also establishes where the relationship stops: it is not uniform across sites, and random-subset resampling distinguishes genuine non-uniformity from loss of statistical power. I regard this boundary as part of the contribution, since it is the kind of limit that single-condition analyses cannot detect at all.
+
+I have tried to make every step checkable. An independent reimplementation reproduces the published condition closely (mean absolute error 0.184 against 0.186; Spearman 0.681 against 0.699), which establishes that the subsequent results reflect the data rather than a change of pipeline. Structural descriptors were extracted for every lysine in the union across conditions and validated against the table distributed with the original analysis, reproducing all thirteen fields to floating-point precision. The four source files are identified by SHA-256, and code, derived label tables, configurations and result files are available in the repository cited in the manuscript, so a reader can regenerate the labels from the archive without reprocessing raw spectra.
+
+The claims are deliberately bounded to what the deposited data support. Inference is confined to the scaffold and assay represented in the archive, every positive claim is tied to a site-structure permutation control rather than to a cross-validation score alone, and no statement is made about proteome-wide repairability or about enzyme delivery. I believe this discipline is what allows the methodological findings to stand.
+
+The manuscript is original, is not under consideration elsewhere, and has a single author with no competing interests to declare. I would be glad to suggest reviewers with expertise in quantitative proteomics and in the reuse of public proteomics data if that would assist.
+
+Thank you for considering this submission.
+
+\vspace{0.8em}
+\noindent Yours sincerely,
+
+\vspace{2.2em}
+\noindent Prof.\ Dr.\ Murat Gök\\
+Department of Computer Engineering, Faculty of Engineering\\
+Yalova University, Yalova, Türkiye\\
+murat.gok@yalova.edu.tr\\
+ORCID 0000-0003-2261-9288
+\end{document}

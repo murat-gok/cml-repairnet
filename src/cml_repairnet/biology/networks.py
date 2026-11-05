@@ -123,7 +123,7 @@ def graph_tables(
     closeness = nx.closeness_centrality(graph)
     try:
         eigenvector = nx.eigenvector_centrality_numpy(graph, weight="weight")
-    except Exception:
+    except Exception:  # noqa: BLE001
         eigenvector = {node: np.nan for node in graph.nodes}
     communities = (
         list(nx.community.greedy_modularity_communities(graph, weight="weight"))
@@ -153,7 +153,7 @@ def graph_tables(
     components = [len(component) for component in nx.connected_components(graph)]
     try:
         assortativity = nx.degree_assortativity_coefficient(graph)
-    except Exception:
+    except Exception:  # noqa: BLE001
         assortativity = np.nan
     metrics = pd.DataFrame(
         [
@@ -220,7 +220,7 @@ def run_string_networks(
             except OfflineCacheMiss as exc:
                 status = "offline_cache_missing"
                 error = str(exc)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 status = "failed"
                 error = f"{type(exc).__name__}: {exc}"
             manifest_rows.append(

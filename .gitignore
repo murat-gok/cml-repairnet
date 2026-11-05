@@ -14,9 +14,25 @@ data/interim/*
 !data/interim/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+# Derived label and descriptor tables cited in the manuscript's data
+# availability statement. Small, and needed to reproduce the reanalysis.
+!data/processed/bsa_labels.csv
+!data/processed/bsa_structure_features.csv
+!data/processed/bsa_structure_features_union44.csv
 data/external/*
 !data/external/.gitkeep
-results/
+# Parsed copy of the four PXD070124 quantification tables, with the source
+# URL, column schema and per-file SHA-256 recorded inside the file.
+!data/external/pxd070124_parsed.json
+# 'results/*' rather than 'results/' so that the reanalysis outputs the
+# manuscript cites can be re-included below; a bare directory rule would stop
+# git descending into it at all.
+results/*
+!results/multicondition/
+# Intermediate results from before the descriptor table covered the union of
+# sites; kept on disk for provenance, not published.
+results/multicondition/superseded/
+docs/submission_JPR/superseded/
 models/
 mlruns/
 .DS_Store
@@ -42,6 +58,10 @@ data/raw/stage4/*.pdb
 results/*_console.txt
 results/stage4_quick_v056_backup/
 *.zip
+
+# Local pre-revision safety copies: a 10 MB archive of the working tree,
+# useful on disk, permanent weight in git history.
+backups/
 
 # Editors and operating systems
 .vscode/

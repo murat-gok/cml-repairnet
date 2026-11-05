@@ -101,9 +101,9 @@ def write_audit_report(report: dict[str, Any], json_path: Path, markdown_path: P
         f"- Sequence table columns: {report['n_sequence_columns']}",
         f"- Structure table columns: {report['n_structure_columns']}",
         f"- Published target range: {report['target_min']:.4f}–{report['target_max']:.4f}",
-        f"- Published vs replicate-reconstructed MAE: "
+        f"- Published vs replicate-reconstructed MAE: "  # noqa: ISC004
         f"{report['published_vs_reconstructed_mae']:.4f}",
-        f"- Largest absolute discrepancy: "
+        f"- Largest absolute discrepancy: "  # noqa: ISC004
         f"{report['published_vs_reconstructed_max_abs_delta']:.4f} "
         f"(UniProt site {report['largest_delta_site_uniprot']})",
         f"- Missing structure sites: {report['structure_missing_sites']}",

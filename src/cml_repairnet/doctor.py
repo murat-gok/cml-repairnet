@@ -42,7 +42,7 @@ def format_doctor_report(report: dict[str, Any]) -> str:
     lines = [
         "CML-RepairNet environment check",
         "=" * 32,
-        f"Python: {report['python']} "
+        f"Python: {report['python']} "  # noqa: ISC004
         f"({'OK' if report['python_supported'] else 'SUPPORTED RANGE: 3.10–3.12'})",
         f"Platform: {report['platform']}",
         "",

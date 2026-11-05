@@ -167,7 +167,7 @@ def test_ortholog_concordance() -> None:
 def test_candidate_modules_are_deterministic() -> None:
     frame = atlas_frame(24)
     a1, p1, s1 = build_candidate_modules(frame, random_state=7)
-    a2, p2, s2 = build_candidate_modules(frame, random_state=7)
+    a2, _p2, s2 = build_candidate_modules(frame, random_state=7)
     assert a1["module_id"].tolist() == a2["module_id"].tolist()
     assert len(p1) >= 2
     assert int(s1.loc[s1["silhouette"].idxmax(), "k"]) == int(

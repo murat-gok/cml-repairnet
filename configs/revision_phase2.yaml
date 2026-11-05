@@ -1,0 +1,24 @@
+random_seed: 20260801
+T5_conformal:
+  alpha: 0.10
+  density_ratio_weight_clip: [0.05, 20.0]
+  ood_inflation_max: 2.0
+  primary_partition: ward_g4
+  feature_set: structure_transfer_safe
+  model: extra_trees
+T6_boundary:
+  low_response_threshold: 0.10
+  high_response_threshold: 0.90
+  bootstrap_iterations: 20000
+T7_compartments:
+  hard_exclusion: false
+  extracellular_candidates_are_confirmed: false
+  intracellular_delivery_is_assumed: false
+T8_functional:
+  matched_controls_per_query: 5
+  gprofiler_domain_scope: custom
+  gprofiler_correction: fdr
+  gprofiler_sources: [GO:BP, GO:MF, GO:CC, REAC, KEGG, WP, CORUM, HPA]
+  network_combined_score_thresholds: [0.70, 0.80, 0.90]
+  text_mining_dominated_threshold: 0.70
+  experimental_or_database_support_threshold: 0.40

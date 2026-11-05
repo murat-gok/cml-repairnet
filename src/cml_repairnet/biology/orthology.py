@@ -207,7 +207,7 @@ def run_orthology(
     except OfflineCacheMiss as exc:
         mapping = pd.DataFrame(columns=ORTHOLOGY_COLUMNS)
         status, error = "offline_cache_missing", str(exc)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         mapping = pd.DataFrame(columns=ORTHOLOGY_COLUMNS)
         status, error = "failed", f"{type(exc).__name__}: {exc}"
 

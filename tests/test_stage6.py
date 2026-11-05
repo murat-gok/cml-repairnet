@@ -17,7 +17,6 @@ from cml_repairnet.robustness.tiers import run_candidate_tiers
 
 
 def _atlas(n: int = 12) -> pd.DataFrame:
-    rng = np.random.default_rng(4)
     values = np.linspace(0.2, 0.9, n)
     return pd.DataFrame(
         {

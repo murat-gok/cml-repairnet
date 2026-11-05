@@ -1,0 +1,83 @@
+{
+  "common_core": [
+    65,
+    75,
+    88,
+    100,
+    183,
+    197,
+    204,
+    256,
+    266,
+    304,
+    309,
+    318,
+    336,
+    346,
+    489,
+    523,
+    528,
+    568,
+    580,
+    597
+  ],
+  "config": {
+    "clip_range": [
+      0.2,
+      5.0
+    ],
+    "confidence_cutoff": 90.0,
+    "max_depth": 4,
+    "min_samples_leaf": 2,
+    "n_blocks": 4,
+    "n_blocks_core": 3,
+    "n_estimators": 500,
+    "n_permutations": 200,
+    "n_subset_draws": 200,
+    "seed": 0,
+    "subset_seed": 7,
+    "subset_size": 20,
+    "variance_floor": 0.0001,
+    "weight_modes": [
+      "inv_var",
+      "none",
+      "clip5"
+    ]
+  },
+  "n_sites_with_structure": 44,
+  "parse_issues": [
+    [
+      "0p5",
+      "row2",
+      "nan",
+      "K44+CML_K"
+    ]
+  ],
+  "schema": "rows = [residue, confidence, active_r1, active_r2, active_r3, inactive_r1, inactive_r2, inactive_r3]  (% Abundance)",
+  "sha256_prefix": {
+    "0p25": "6d9fe8b86b77d205",
+    "0p5": "9b8c7d8c5b78c202",
+    "1p0": "0df9e146fd41e4b5",
+    "2p0": "8224464fdb5606f5"
+  },
+  "source": "https://ftp.pride.ebi.ac.uk/pride/data/archive/2026/07/PXD070124/BSA_{cond}_865_794_processed_filt_quant.csv",
+  "subset_summary": {
+    "core_improvement": 0.0031066504277089124,
+    "core_percentile": 0.03,
+    "core_size": 20,
+    "core_spearman": -0.22406015037593985,
+    "fraction_above_0": 0.91,
+    "fraction_above_0.3": 0.74,
+    "improvement_mean": 0.06239519940743787,
+    "improvement_median": 0.0625377150964241,
+    "n_draws": 200,
+    "reference_cond": "0p5",
+    "reference_substrate_ng": 500,
+    "spearman_mean": 0.4002947630548085,
+    "spearman_median": 0.4609022556390977,
+    "spearman_p5": -0.13481203007518794,
+    "spearman_p95": 0.7084210526315787,
+    "spearman_sd": 0.2647912794392605,
+    "subset_size": 20
+  }
+}

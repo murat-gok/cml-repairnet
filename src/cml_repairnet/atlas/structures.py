@@ -270,7 +270,7 @@ def select_entry_for_site(
             entry.entry_id,
         )
 
-    return sorted(compatible, key=rank)[0]
+    return min(compatible, key=rank)
 
 
 def download_alphafold_structure(
@@ -477,7 +477,7 @@ def _process_accession(
     if output.exists() and not overwrite:
         try:
             cached = pd.read_csv(output)
-        except Exception:
+        except Exception:  # noqa: BLE001
             cached = None
     stable_cached, pending = (
         (pd.DataFrame(), candidates.copy())
@@ -553,7 +553,7 @@ def _process_accession(
                 if parts
                 else pd.DataFrame(missing_rows)
             )
-    except Exception as exc:  # retain failure, but retry it automatically next run
+    except Exception as exc:  # noqa: BLE001  # retain failure, but retry it automatically next run
         new_frame = pending[["candidate_id", "species", "uniprot_accession", "site_uniprot"]].copy()
         new_frame["structure_status"] = "excluded"
         new_frame["structure_reason"] = f"structure_processing_error:{type(exc).__name__}:{exc}"

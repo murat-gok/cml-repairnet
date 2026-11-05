@@ -78,7 +78,7 @@ def run_residue_conservation(pairs: pd.DataFrame, config: dict) -> pd.DataFrame:
                 continue
             local_total += 1
             local_identical += human_sequence[human_position] == mouse_sequence[mouse_position]
-        identical, aligned, global_identity = _mapped_identity(
+        _identical, aligned, global_identity = _mapped_identity(
             alignment, human_sequence, mouse_sequence
         )
 

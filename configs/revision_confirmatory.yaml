@@ -1,0 +1,28 @@
+revision_confirmatory:
+  target: repair_published
+  output: results/revision_confirmatory
+  targeted_feature_families:
+    - structure_transfer_safe
+    - structure_transfer_safe_plus_proxy
+    - structure_full
+    - structure_full_plus_proxy
+    - structure_bfactor_only
+    - structure_proxy_only
+  candidate_models:
+    - extra_trees
+    - lightgbm
+    - ridge
+  quick:
+    group_counts: [4]
+    random_partitions_per_group_count: 5
+    permutation_iterations_per_partition: 200
+  confirmatory:
+    group_counts: [4]
+    random_partitions_per_group_count: 5
+    permutation_iterations_per_partition: 1000
+    bootstrap_iterations: 20000
+    sign_flip_iterations: 100000
+  primary_model:
+    feature_set: structure_transfer_safe
+    model: extra_trees
+    partition: ward_g4

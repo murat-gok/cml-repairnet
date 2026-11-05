@@ -216,7 +216,7 @@ def run_enrichment(
                     version_rows.append(
                         {"organism": organism, "versions_json": json.dumps(versions)}
                     )
-                except Exception as exc:  # version metadata must not fail the analysis
+                except Exception as exc:  # noqa: BLE001  # version metadata must not fail the analysis
                     version_rows.append(
                         {"organism": organism, "versions_json": "", "error": str(exc)}
                     )
@@ -224,7 +224,7 @@ def run_enrichment(
         except OfflineCacheMiss as exc:
             status = "offline_cache_missing"
             error = str(exc)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             status = "failed"
             error = f"{type(exc).__name__}: {exc}"
         query_rows.append(

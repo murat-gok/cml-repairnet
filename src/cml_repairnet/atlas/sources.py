@@ -592,7 +592,7 @@ def _select_accession_column(frame: pd.DataFrame) -> str | None:
         candidates.append((matches, fraction, _accession_header_bonus(column), name))
     if not candidates:
         return None
-    matches, fraction, bonus, name = max(
+    matches, fraction, _bonus, name = max(
         candidates,
         key=lambda item: (item[0], item[1], item[2], item[3]),
     )
@@ -694,7 +694,7 @@ def normalize_workbook(
     for sheet in excel.sheet_names:
         try:
             frame, header_row, header_depth = _read_supplementary_sheet(workbook, sheet)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             diagnostics.append(
                 ParseDiagnostics(
                     workbook.name,

@@ -1,0 +1,37 @@
+version: 0.10.0
+seed: 20260727
+paths:
+  labels_csv: data/processed/bsa_labels.csv
+  structure_features_csv: data/processed/bsa_structure_features.csv
+  source_labels_csv: data/external/trabosh2026_bulk_protein_repair.csv
+  scaffold_panel_csv: data/external/external_scaffold_panel.csv
+  cache_dir: data/interim/external_scaffold_validation/cache
+  output_dir: results/external_scaffold_validation
+model:
+  target: repair_published
+  primary_model: extra_trees
+  models: [extra_trees, lightgbm, ridge]
+  transfer_safe_features:
+    - residue_sasa
+    - relative_sasa_lysine
+    - distance_to_protein_centroid
+    - neighbor_hydrophobic_fraction_8a
+    - neighbor_cysteine_count_8a
+    - neighbor_aromatic_count_8a
+    - ca_contact_count_8a
+    - ca_contact_count_10a
+    - ca_contact_count_12a
+quality:
+  strict_site_plddt: 70.0
+  strict_neighbor_plddt: 70.0
+  relaxed_site_plddt: 50.0
+  relaxed_neighbor_plddt: 50.0
+  ood_percentile_cutoff: 0.95
+  ood_neighbors: 5
+analysis:
+  bootstrap_iterations: 2000
+  primary_quality: strict
+  primary_domain: in_domain
+  primary_aggregation: sasa_weighted_mean
+  primary_component_scheme: stoichiometric
+  observed_summary: median_across_modification_levels

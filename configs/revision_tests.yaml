@@ -1,0 +1,22 @@
+revision_tests:
+  target: repair_published
+  quick:
+    random_partitions_per_group_count: 5
+    group_counts: [4]
+    permutation_iterations: 200
+  full:
+    random_partitions_per_group_count: 50
+    group_counts: [3, 4, 5]
+    permutation_iterations: 1000
+  models:
+    - extra_trees
+    - ridge
+    - lightgbm
+  transfer_unsafe_bfactor_columns:
+    - bfactor_ca
+    - neighbor_mean_bfactor_8a
+  primary_contrasts:
+    - sequence -> combined_transfer_safe
+    - structure_transfer_safe -> combined_transfer_safe
+    - combined_transfer_safe -> combined_transfer_safe_plus_proxy
+    - combined_transfer_safe -> combined_full

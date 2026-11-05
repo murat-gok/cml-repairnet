@@ -61,7 +61,7 @@ def load_config(root: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as handle:
         config = yaml.safe_load(handle)
     if not isinstance(config, dict):
-        raise ValueError("Stage 6 config must be a mapping")
+        raise TypeError("Stage 6 config must be a mapping")
     return config
 
 

@@ -1,0 +1,4 @@
+quantity,value,p,n
+spearman_confidence_vs_response,-0.08693463321255541,0.6304753815727941,33
+mannwhitney_core_vs_rest_response,-0.00023617842688272717,0.8394156924542152,33
+bonferroni_threshold,0.005555555555555556,,9

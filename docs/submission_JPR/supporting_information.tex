@@ -1,0 +1,96 @@
+\documentclass[journal=jprobs,manuscript=suppinfo,layout=traditional]{achemso}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{lmodern}
+\SectionNumbersOn
+\author{Murat G\"ok}
+\affiliation{Department of Computer Engineering, Faculty of Engineering, Yalova University, 77200 Yalova, T\"urkiye}
+\email{murat.gok@yalova.edu.tr}
+\title{Supporting Information: Condition identity and label weighting govern structure--response inference from reused site-resolved PTM data}
+\sloppy
+\begin{document}
+\maketitle
+
+\section{Protein-level comparison with bulk responses}
+
+The source study reports bulk CML-ELISA responses for casein, haemoglobin and
+collagen at three modification levels each. Figure~\ref{fig:s1} summarises the
+comparison discussed in the main text.
+
+The observed ordering is stable: casein exceeds haemoglobin, which exceeds
+collagen, at all three levels (Figure~\ref{fig:s1}A), so the comparison does not
+fail on the measurement side. One value, casein at the low modification level,
+exceeds unity (1.34, SD 0.61) and is therefore not physically interpretable as a
+repair fraction; we retain it as reported and note that it does not affect the
+ordering.
+
+Across the 96 of 192 pipeline configurations in which all three scaffolds were
+represented, seven recovered the observed ordering (Figure~\ref{fig:s1}B),
+against a chance expectation of one in six. The two most frequent predicted
+orderings place haemoglobin or collagen first. These configurations are nested
+variants of a single pipeline and are strongly correlated, so the fraction is
+descriptive and not a significance test.
+
+The prespecified configuration could not be evaluated at all because collagen
+contributed no lysine meeting both the structure-confidence and
+applicability-domain criteria (Figure~\ref{fig:s1}C). Of 69 collagen lysines,
+none met the strict structure-quality criterion and one fell inside the
+applicability domain; for casein the corresponding counts were 8 and 18 of 58,
+and for haemoglobin 24 and 12 of 24.
+
+With three scaffolds, an exact-ordering test cannot yield a $P$ value below one
+in six, so this comparison could not have supported a transfer claim under any
+outcome. It is reported as an applicability stress test.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figureS1_cross_scaffold.pdf}
+\caption{Protein-level comparison. (A) Observed bulk repair fraction by scaffold
+and modification level, with standard deviations over four replicates; the
+dotted line marks complete repair. (B) Distribution of predicted scaffold
+orderings across the 96 complete pipeline configurations; the observed ordering
+is highlighted and the dashed line marks the chance expectation. Cas, casein;
+Hb, haemoglobin; Col, collagen. (C) Lysines per scaffold, those meeting the
+strict structure-quality criterion, and those inside the applicability domain.}
+\label{fig:s1}
+\end{figure}
+
+\section{Response dispersion by substrate load}
+
+\begin{table}[htbp]
+\caption{Response distribution for the site sets analysed in the main text.}
+\label{tbl:s1}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Load (ng) & $n$ & Mean & SD & Min & Max & IQR & $\le 0.10$ / $\ge 0.90$ \\
+\midrule
+250  & 22 & 0.547 & 0.357 & 0.00 & 0.96 & 0.574 & 5 / 5 \\
+500  & 33 & 0.602 & 0.310 & 0.00 & 1.00 & 0.509 & 3 / 7 \\
+1000 & 37 & 0.479 & 0.304 & 0.00 & 0.89 & 0.533 & 7 / 0 \\
+2000 & 38 & 0.455 & 0.298 & 0.00 & 0.97 & 0.492 & 6 / 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Dispersion is comparable across loads, with standard deviations spanning
+0.298--0.357 and interquartile ranges 0.492--0.574, a difference of at most
+twenty percent between the widest and narrowest condition. Mean response
+declines with increasing substrate load, the direction expected when enzyme
+concentration is held constant.
+
+\section{Descriptor extraction and validation}
+
+Structural descriptors were extracted for all 44 lysines appearing in the union
+across loads. The descriptor table distributed with the original analysis covers
+only the 33 sites of the 500~ng condition. To verify that our extraction
+reproduces that pipeline, descriptors were recomputed for those 33 sites and
+compared field by field. All thirteen fields agreed to floating-point precision,
+the largest absolute difference being $1.4\times10^{-14}$ (residue
+solvent-accessible surface area). The eleven additional lysines (positions 36,
+44, 151, 160, 228, 235, 248, 285, 340, 544 and 548) are ordinary lysines in
+chain A of PDB 4F5S and yield descriptors under the same rules.
+
+\end{document}

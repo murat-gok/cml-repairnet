@@ -107,7 +107,7 @@ def run_enrichment_sensitivity(enrichment: pd.DataFrame, config: dict) -> pd.Dat
     threshold = float(config.get("redundancy_jaccard", 0.70))
     group_values = np.zeros(len(result), dtype=int)
     group_offset = 0
-    for _, indices in result.groupby(["species", "query_name", "source"]).groups.items():
+    for indices in result.groupby(["species", "query_name", "source"]).groups.values():
         sub = result.loc[list(indices)].copy().reset_index()
         groups = _redundancy_groups(sub, threshold)
         mapping = {original: group + group_offset for original, group in zip(sub["index"], groups)}

@@ -14,5 +14,5 @@ def load_config(path: str | Path = "configs/base.yaml") -> dict[str, Any]:
     with config_path.open("r", encoding="utf-8") as handle:
         data = yaml.safe_load(handle)
     if not isinstance(data, dict):
-        raise ValueError("Configuration root must be a mapping.")
+        raise TypeError("Configuration root must be a mapping.")
     return data

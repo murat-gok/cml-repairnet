@@ -181,7 +181,7 @@ def write_markdown_summary(
         "",
         "## Interpretation rule",
         "",
-        "A model is considered robust only when its point estimate improves on the dummy "
+        "A model is considered robust only when its point estimate improves on the dummy "  # noqa: ISC004
         "baseline, the paired bootstrap interval is predominantly above zero, and the "
         "one-sided sign-flip permutation result is supportive. Feature-set and target "
         "sensitivity must also be reported; no single split is treated as definitive.",

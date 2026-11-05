@@ -12,7 +12,7 @@ def _count(path: Path) -> int:
         return 0
     try:
         return len(pd.read_csv(path))
-    except Exception:
+    except Exception:  # noqa: BLE001
         return 0
 
 

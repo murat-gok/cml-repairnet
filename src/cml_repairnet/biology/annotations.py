@@ -88,7 +88,7 @@ def run_uniprot_annotations(
     except OfflineCacheMiss as exc:
         annotations, families = pd.DataFrame(), pd.DataFrame()
         status, error = "offline_cache_missing", str(exc)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         annotations, families = pd.DataFrame(), pd.DataFrame()
         status, error = "failed", f"{type(exc).__name__}: {exc}"
     metadata = client.cached_metadata()
