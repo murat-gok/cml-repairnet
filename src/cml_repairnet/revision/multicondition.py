@@ -747,6 +747,29 @@ def measurability_confound(
 # ---------------------------------------------------------------------------
 
 
+def _environment() -> dict[str, str]:
+    """Record what produced these numbers.
+
+    Permutation P values are counts of how many permuted fits beat the real
+    one, so a value sitting a hair under the threshold can move across it
+    between library versions even when the fitted model is identical to
+    three decimals. Recording the environment lets a later run tell a real
+    difference from a numerical one.
+    """
+    import platform
+
+    import sklearn
+
+    return {
+        "python": platform.python_version(),
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+        "scipy": __import__("scipy").__version__,
+        "scikit-learn": sklearn.__version__,
+        "platform": platform.platform(),
+    }
+
+
 @dataclass
 class MulticonditionOutputs:
     """Everything the reanalysis writes, kept in memory for testing."""
@@ -847,6 +870,7 @@ def run(
         table.to_csv(out / f"confound_{name}.csv", index=False)
 
     manifest = {
+        "environment": _environment(),
         "source": raw.get("_source"),
         "schema": raw.get("_schema"),
         "sha256_prefix": raw.get("_sha256_prefix"),
